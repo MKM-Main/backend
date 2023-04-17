@@ -1,49 +1,39 @@
-import {Router} from "express"
+import { Router } from "express"
 import bcrypt from "bcrypt";
 import db from "../database/database.js"
 
 const router = Router()
 
+//Create a user with the role "USER".
 router.post("/api/auth/signup", async (req, res) => {
-    console.log(req.body)
-    const {firstName, lastName, artistName, email, password} = req.body
-    const hashedPassword = bcrypt.hashSync(password, 10)
-
-
-    const newUser = {
-        firstName,
-        lastName,
-        artistName,
-        email,
-        password: hashedPassword,
-        creationDate: new Date().toLocaleString("en-GB"),
-        followers: [],
-        following: []
-    }
-
-
-    console.log(newUser)
-    const findUserByEmail = await db.users.find({email: email}).toArray()
-    if (findUserByEmail.length !== 0) {
-        res.status(422).send({data: `User with email ${email} already exists`})
+    const newUser = req.body
+    const hashedPassword = await bcrypt.hash(newUser.password, 10);
+    newUser.password = hashedPassword
+    newUser.creationDate = new Date().toLocaleString("en-GB");
+    let emailExist = await db.users.find({ email: newUser.email }).toArray()
+    
+    if (emailExist != 0) {
+        res.status(500).send({ message: "Signup failed" })
     } else {
-        try {
-            await db.users.insertOne(newUser)
-            req.session.firstName = firstName
-            req.session.lastName = lastName
-            req.session.artistName = artistName
-            req.session.email = email
-
-            res.status(200).send({data: "Signup was a success"})
-
-        } catch (error) {
-            console.log(error)
-            res.status(500).redirect("/")
-        }
+        db.users.insertOne(newUser)
+        req.session.firstName = newUser.firstName
+        res.status(200).send({ message: "Signup success" })
     }
-
-
 })
 
-export default router
+router.post("/api/auth/login", async (req, res) => {
+    const user = req.body
+    const dbEmail = await db.users.find({ email: user.email }).toArray()
+    try {
+      const hashedPassword = dbEmail[0].password
+      if (await bcrypt.compare(user.password, hashedPassword)) {
+        req.session.name = user.firstName;
+        res.status(200).send({ message: "Login success" })
+      }
+    } catch (error) {
+      res.status(500).send({ message: "login failed" })
+    }
+  })
 
+
+export default router

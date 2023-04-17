@@ -1,6 +1,8 @@
 import db from "./database.js"
 import bcrypt from "bcrypt"
 
+const hashedPassword = await bcrypt.hash("123", 10)
+
 const cleanDatabase = async () => {
     const deleteAction = true
     if (deleteAction) {
@@ -20,7 +22,7 @@ const insertData = async () => {
             "artistName": "Gram",
             "email": "malthegram22@gmail.com",
             "creationDate": new Date().toLocaleString("en-GB"),
-            "password": bcrypt.hashSync("123", 10),
+            "password": hashedPassword,
             "followers": [
                 "Funch",
                 "Qyvaden"
@@ -126,4 +128,3 @@ const insertData = async () => {
     ])
 
 }
-
