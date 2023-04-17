@@ -12,7 +12,6 @@ const cleanDatabase = async () => {
     }
 }
 
-await cleanDatabase()
 
 const insertData = async () => {
     await db.users.insertMany([
@@ -48,7 +47,7 @@ const insertData = async () => {
             "firstName": "Michael",
             "lastName": "Dyvad",
             "artistName": "Qyvaden",
-            "email": "coke@young",
+            "email": "dyvad@michael.dk",
             "creationDate": new Date().toLocaleString("en-GB"),
             "password": bcrypt.hashSync("123", 10),
             "followers": [
@@ -128,3 +127,6 @@ const insertData = async () => {
     ])
 
 }
+
+await cleanDatabase()
+await insertData()
