@@ -12,7 +12,7 @@ const cleanDatabase = async () => {
     }
 }
 
-await cleanDatabase()
+// await cleanDatabase()
 
 const insertData = async () => {
     await db.users.insertMany([
@@ -128,3 +128,4 @@ const insertData = async () => {
     ])
 
 }
+insertData()
