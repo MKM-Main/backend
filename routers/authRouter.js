@@ -11,13 +11,13 @@ router.post("/api/auth/signup", async (req, res) => {
     newUser.password = hashedPassword
     newUser.creationDate = new Date().toLocaleString("en-GB");
     let emailExist = await db.users.find({ email: newUser.email }).toArray()
-    
+
     if (emailExist != 0) {
         res.status(500).send({ message: "Signup failed" })
     } else {
         db.users.insertOne(newUser)
-        req.session.firstName = newUser.firstName
-        res.status(200).send({ message: "Signup success" })
+            req.session.firstName = newUser.firstName
+            res.status(200).send({ message: "Signup success" })
     }
 })
 
