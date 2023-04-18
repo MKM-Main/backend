@@ -13,11 +13,16 @@ function isValidPassword(password) {
 }
 
 
-router.get('/api/jwt', authMiddleware, (req, res) => {
+router.get('/api/auth/verify/token', authMiddleware, async (req, res) => {
+  //Firstname, lastname, artistname, email, creationDate, followers[], following[]
   const userId = req.userId;
   const userEmail = req.userEmail;
-  console.log(userId, userEmail)
-  res.json({ message: 'This is a protected endpoint!' });
+  const userData = await db.users.findOne({email: userEmail})
+  if (userData.email === userEmail && userData._id.toString() === userId){
+    res.json({ id: userData._id, email: userData.email, firstName: userData.firstName, lastName: userData.lastName, artistName: userData.artistName, followers: userData.followers, following: userData.following });
+  } else{
+    res.json({message: "auth failed"})
+  }
 });
 
 router.post("/api/auth/signup", async (req, res) => {

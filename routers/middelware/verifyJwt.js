@@ -3,11 +3,10 @@ const jwtSecret = process.env.JWT_SECRET
 
 
 export const authMiddleware = (req, res, next) => {
-    console.log(req.body)
     // Get the JWT token from the Authorization header
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
-    
+
     if (!token) {
       return res.status(401).json({ message: 'Auth failed!' });
     }
