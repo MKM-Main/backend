@@ -1,7 +1,10 @@
 import {Router} from "express"
 import bcrypt from "bcrypt";
 import db from "../database/database.js"
+import jwt from "jsonwebtoken";
+import { authMiddleware } from "./middelware/verifyJwt.js";
 
+const jwtSecret = process.env.JWT_SECRET
 const router = Router()
 
 function isValidPassword(password) {
@@ -10,28 +13,35 @@ function isValidPassword(password) {
 }
 
 
+router.get('/api/jwt', authMiddleware, (req, res) => {
+  const userId = req.userId;
+  const userEmail = req.userEmail;
+  console.log(userId, userEmail)
+  res.json({ message: 'This is a protected endpoint!' });
+});
+
 router.post("/api/auth/signup", async (req, res) => {
-    const newUser = req.body
+  const newUser = req.body;
+  newUser.password = await bcrypt.hash(newUser.password, 10);
+  newUser.creationDate = new Date().toLocaleString("en-GB");
+  const emailExist = await db.users.find({ email: newUser.email }).toArray();
+  if (emailExist.length !== 0) {
+    res.status(401).send({ message: "Signup failed" });
+  } else {
+    try {
+      await db.users.insertOne(newUser);
 
+      // Generate a JWT token with the user ID and email as payload
+      const token = jwt.sign({ id: newUser._id, email: newUser.email }, jwtSecret);
 
-    newUser.password = await bcrypt.hash(newUser.password, 10)
-    newUser.creationDate = new Date().toLocaleString("en-GB");
-
-    const emailExist = await db.users.find({ email: newUser.email }).toArray()
-    if (emailExist.length !== 0) {
-        res.status(401).send({ message: "Signup failed" })
-    } else {
-        try {
-
-
-            await db.users.insertOne(newUser)
-            req.session.firstName = newUser.firstName
-            res.status(200).send({ message: "Signup success" })
-        } catch (error) {
-            console.log(`Error: ${error.message}`)
-        }
+      // Set the JWT token in a cookie (you could also store it in localStorage or sessionStorage in the front-end)
+      res.cookie('jwt', token, { httpOnly: true });
+      res.status(200).send({token});
+    } catch (error) {
+      console.log(`Error: ${error.message}`);
     }
-})
+  }
+});
 
 router.post("/api/auth/login", async (req, res) => {
     const user = req.body
