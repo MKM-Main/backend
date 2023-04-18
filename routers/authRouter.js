@@ -18,8 +18,10 @@ router.get('/api/auth/verify/token', authMiddleware, async (req, res) => {
   const userId = req.userId;
   const userEmail = req.userEmail;
   const userData = await db.users.findOne({email: userEmail})
+  delete userData.password
   if (userData.email === userEmail && userData._id.toString() === userId){
-    res.json({ id: userData._id, email: userData.email, firstName: userData.firstName, lastName: userData.lastName, artistName: userData.artistName, followers: userData.followers, following: userData.following });
+    res.json(userData)
+    //res.json({ id: userData._id, email: userData.email, firstName: userData.firstName, lastName: userData.lastName, artistName: userData.artistName, followers: userData.followers, following: userData.following });
   } else{
     res.json({message: "auth failed"})
   }
