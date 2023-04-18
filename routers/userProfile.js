@@ -4,14 +4,14 @@ import { ObjectId } from "mongodb";
 
 const router = Router();
 
-router.get("/api/user/:id", async (req, res) => {
+router.get("/api/users/:id", async (req, res) => {
     const id = new ObjectId(req.params.id)
     const user = await db.users.findOne({_id : id})
     delete user.password;
     res.send({user: user})
 })
 
-router.patch("/api/user/follow/:id", async (req, res) => {
+router.patch("/api/users/follow/:id", async (req, res) => {
     //User who follows another user
     const userId = new ObjectId(req.params.id)
 
@@ -39,7 +39,7 @@ router.patch("/api/user/follow/:id", async (req, res) => {
 })
 
 
-router.patch("/api/user/unfollow/:id", async (req, res) => {
+router.patch("/api/users/unfollow/:id", async (req, res) => {
     const userId = new ObjectId(req.params.id)
     const unfollowUserId = new ObjectId(req.body.userId)
 
