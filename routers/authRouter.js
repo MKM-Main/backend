@@ -45,7 +45,7 @@ router.post("/api/auth/signup", async (req, res) => {
   const emailExist = await db.users.find({ email: newUser.email }).toArray();
   
   if (emailExist.length !== 0) {
-    res.status(200).send({ message: "Signup failed" });
+    res.status(401).send({ message: "Signup failed" });
   } else {
     try {
       await db.users.insertOne(newUser);
@@ -71,7 +71,7 @@ router.post("/api/auth/login", async (req, res) => {
       if (await bcrypt.compare(user.password, hashedPassword)) {
         console.log(findUserByEmail.password)
         delete findUserByEmail[0].password
-        const accessToken = jwt.sign(user, jwtSecret);
+        const accessToken = jwt.sign(findUserByEmail[0], jwtSecret);
         res.cookie('jwt', accessToken, { httpOnly: true });
         res.status(200).send({data: findUserByEmail})
       }

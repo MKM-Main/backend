@@ -1,12 +1,12 @@
 import {Router} from "express"
 import db from "../database/database.js"
 import { ObjectId } from "mongodb";
-
+import { authenticateToken } from "./middelware/verifyJwt.js"
 const router = Router();
 
-router.get("/api/users/:id", async (req, res) => {
-    const id = new ObjectId(req.params.id)
-    const user = await db.users.findOne({_id : id})
+router.get("/api/users/:artistname", async (req, res) => {
+    const artistName = req.params.artistname
+    const user = await db.users.findOne({artistName : artistName})
     delete user.password;
     res.send({user: user})
 })
@@ -60,9 +60,8 @@ router.patch("/api/users/unfollow/:id", async (req, res) => {
 })
 
 //Gets the posts from users following (Landing page)
-router.get("/api/posts/landingpage/:id", async (req, res) => {
-    const id = new ObjectId(req.params.id);
-    const user = await db.users.findOne({ _id: id });
+router.get("/api/posts/landingpage", authenticateToken, async (req, res) => {
+    const user = req.user
     const artistName = user.artistName;
     const following = user.following;
     const postArray = [];
@@ -77,13 +76,13 @@ router.get("/api/posts/landingpage/:id", async (req, res) => {
       const posts = await cursor.toArray();
       postArray.push(...posts);
     }
+    console.log(postArray)
     res.status(200).send(postArray)
   });
 
 //Post on own wall
-router.get("/api/posts/wallpost/:id", async (req, res) => {
-    const userId = new ObjectId(req.params.id);
-    const user = await db.users.findOne({ _id: userId });
+router.get("/api/posts/wallpost", authenticateToken, async (req, res) => {
+    const user = req.user
     const posts = await db.posts.find({}).toArray();
     
     const artistName = user.artistName;
@@ -116,16 +115,13 @@ router.get("/api/posts/forum/:name", async (req, res) => {
             postArray.push(...posts);
         }
       }
-
-    console.log(postArray);
     res.status(200).send(postArray)
 })
 
 //Create a post from the user and reference is where the post is posted
-router.post('/api/posts/:id/:reference', async (req, res) => {
-    const userId = new ObjectId(req.params.id);
+router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
+    const user = req.user
     const reference = req.params.reference
-    const user = await db.users.findOne({ _id: userId });
     const post = req.body
     post.artistName = user.artistName
     post.referenceName = reference
@@ -137,6 +133,5 @@ router.post('/api/posts/:id/:reference', async (req, res) => {
       res.status(400).send({ message: err.message });
     }
   });
-
   
 export default router;
