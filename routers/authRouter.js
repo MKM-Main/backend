@@ -12,16 +12,9 @@ function isValidPassword(password) {
     return regex.test(password)
 }
 
-router.post('/profile', authenticateToken, (req, res) => {
-    res.send({message: req.user})
+router.get('/profile', authenticateToken,(req, res) => {
+    res.send({customMessage: req.user})
 })
-
-router.get('/profile', (req, res) => {
-
-})
-
-
-
 
 
 // router.get('/api/auth/verify/token', async (req, res) => {
@@ -39,11 +32,10 @@ router.get('/profile', (req, res) => {
 
 router.post("/api/auth/signup", async (req, res) => {
   const newUser = req.body;
-  console.log(newUser)
   newUser.password = await bcrypt.hash(newUser.password, 10);
   newUser.creationDate = new Date().toLocaleString("en-GB");
   const emailExist = await db.users.find({ email: newUser.email }).toArray();
-  
+
   if (emailExist.length !== 0) {
     res.status(401).send({ message: "Signup failed" });
   } else {
@@ -55,7 +47,7 @@ router.post("/api/auth/signup", async (req, res) => {
       // Set the JWT token in a cookie (you could also store it in localStorage or sessionStorage in the front-end)
       res.cookie('jwt', accessToken, { httpOnly: true });
       delete newUser.password
-      res.status(200).send({data: newUser});
+      res.status(200).send({data: "Success"});
     } catch (error) {
       console.log(`Error: ${error.message}`);
     }
@@ -65,15 +57,13 @@ router.post("/api/auth/signup", async (req, res) => {
 router.post("/api/auth/login", async (req, res) => {
     const user = req.body
     const findUserByEmail = await db.users.find({ email: user.email }).toArray()
-    console.log(findUserByEmail)
     try {
       const hashedPassword = findUserByEmail[0].password
       if (await bcrypt.compare(user.password, hashedPassword)) {
-        console.log(findUserByEmail.password)
         delete findUserByEmail[0].password
         const accessToken = jwt.sign(findUserByEmail[0], jwtSecret);
         res.cookie('jwt', accessToken, { httpOnly: true });
-        res.status(200).send({data: findUserByEmail})
+        res.status(200).send({data: "Success"})
       }
     } catch (error) {
       res.status(401).send({ message: `login failed. \nError: ${error.message}` })
