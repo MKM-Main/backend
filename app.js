@@ -4,6 +4,8 @@ import dotenv from "dotenv/config"
 const app = express()
 
 
+
+
 import cors from "cors"
 app.use(cors({
     credentials: true,
@@ -29,6 +31,8 @@ const sessionMiddleware = session({
     }
 })
 app.use(sessionMiddleware)
+
+
 
 
 import authRouter from "./routers/authRouter.js"
