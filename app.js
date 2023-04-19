@@ -36,10 +36,15 @@ app.use(sessionMiddleware)
 
 
 import authRouter from "./routers/authRouter.js"
-app.use(authRouter)
+app.use(authRouter);
 
-import userProfile from "./routers/userProfile.js"
-app.use(userProfile);
+import userRouter from "./routers/userRouter.js"
+app.use(userRouter);
+
+import postRouter from "./routers/postRouter.js"
+app.use(postRouter);
+
+
 
 const PORT = process.env.PORT || 8080
 app.listen(PORT, () => {
