@@ -42,7 +42,6 @@ router.patch("/api/users", authenticateToken, async (req, res) =>{
 router.get("/api/users/:artistname", async (req, res) => {
     const artistName = req.params.artistname
     const user = await db.users.findOne({artistName : artistName})
-    delete user.password;
     res.send({user: user})
 })
 
