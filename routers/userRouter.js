@@ -2,6 +2,8 @@ import {Router} from "express"
 import db from "../database/database.js"
 import { ObjectId } from "mongodb";
 import { authenticateToken } from "./middelware/verifyJwt.js"
+import  jwt  from "jsonwebtoken";
+const jwtSecret = process.env.JWT_SECRET
 const router = Router();
 
 //GET ALL USERS
@@ -26,7 +28,10 @@ router.patch("/api/users", authenticateToken, async (req, res) =>{
     const updatedUser = req.body
     try{
         await db.users.updateOne({_id: id}, {$set: updatedUser})
-        res.send({message: "Succes"})
+        const newPayLoad = { ...req.user, ... updatedUser}
+        const newToken = jwt.sign(newPayLoad, process.env.JWT_SECRET)
+        res.cookie('jwt', newToken, { httpOnly: true });
+        res.send({message: "Succes", token: newToken})
     }catch(error){
         res.status(500).send({message: "Error"})
     }
