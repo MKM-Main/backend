@@ -28,7 +28,7 @@ router.patch("/api/users", authenticateToken, async (req, res) =>{
     const updatedUser = req.body
     try{
         await db.users.updateOne({_id: id}, {$set: updatedUser})
-        const newPayLoad = { ...req.user, ... updatedUser}
+        const newPayLoad = { ...req.user, ...updatedUser}
         const newToken = jwt.sign(newPayLoad, process.env.JWT_SECRET)
         res.cookie('jwt', newToken, { httpOnly: true });
         res.send({message: "Succes", token: newToken})
