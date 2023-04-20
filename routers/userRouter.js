@@ -4,6 +4,36 @@ import { ObjectId } from "mongodb";
 import { authenticateToken } from "./middelware/verifyJwt.js"
 const router = Router();
 
+//GET ALL USERS
+router.get("/api/users", async (req, res) => {
+
+    try {
+        const users = await db.users.find().toArray()
+        delete users.password
+        let usersArray = []
+        users.forEach((user) => {
+            delete user.password
+            usersArray.push(user)
+        })
+        res.status(200).send({data: usersArray})
+    } catch (error) {
+        res.status(404).send({data: `${error}`})
+    }
+})
+
+router.patch("/api/users", authenticateToken, async (req, res) =>{
+    const id = new ObjectId(req.user._id)
+    const updatedUser = req.body
+    try{
+        await db.users.updateOne({_id: id}, {$set: updatedUser})
+        res.send({message: "Succes"})
+    }catch(error){
+        res.status(500).send({message: "Error"})
+    }
+})
+
+
+
 router.get("/api/users/:artistname", async (req, res) => {
     const artistName = req.params.artistname
     const user = await db.users.findOne({artistName : artistName})
