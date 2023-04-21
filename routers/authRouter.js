@@ -64,9 +64,7 @@ router.post("/api/auth/signup", async (req, res) => {
 
 router.post("/api/auth/login", async (req, res) => {
     const user = req.body
-    console.log(user)
     const findUserByEmail = await db.users.find({ email: user.email }).toArray()
-    console.log(findUserByEmail)
     try {
       const hashedPassword = findUserByEmail[0].password
       if (await bcrypt.compare(user.password, hashedPassword)) {
