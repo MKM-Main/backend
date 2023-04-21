@@ -64,12 +64,12 @@ router.post("/api/auth/signup", async (req, res) => {
 
 router.post("/api/auth/login", async (req, res) => {
     const user = req.body
+    console.log(user)
     const findUserByEmail = await db.users.find({ email: user.email }).toArray()
     console.log(findUserByEmail)
     try {
       const hashedPassword = findUserByEmail[0].password
       if (await bcrypt.compare(user.password, hashedPassword)) {
-        console.log(findUserByEmail.password)
         delete findUserByEmail[0].password
         const accessToken = jwt.sign(user, jwtSecret);
         res.cookie('jwt', accessToken, { httpOnly: true });
@@ -79,5 +79,14 @@ router.post("/api/auth/login", async (req, res) => {
       res.status(401).send({ message: `login failed. \nError: ${error.message}` })
     }
   })
+
+  router.get("/api/auth/logout", async (req, res) => {
+    try {
+      res.clearCookie("jwt");
+      res.status(200).send({ message: "User logged out successfully" });
+    } catch (error) {
+      res.status(500).send({ message: `An error occurred. Error: ${error.message}` });
+    }
+  });
 
 export default router
