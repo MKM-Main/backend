@@ -70,4 +70,13 @@ router.post("/api/auth/login", async (req, res) => {
     }
   })
 
+  router.get("/api/auth/logout", async (req, res) => {
+    try {
+      res.clearCookie("jwt");
+      res.status(200).send({ message: "User logged out successfully" });
+    } catch (error) {
+      res.status(500).send({ message: `An error occurred. Error: ${error.message}` });
+    }
+  });
+
 export default router
