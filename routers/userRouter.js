@@ -52,12 +52,12 @@ router.patch("/api/users/follow", authenticateToken, async (req, res) => {
     //Get the id from the follow button on another user
     const followingUserId = new ObjectId(req.body.userId)
 
-    const followinUserData = await db.users.findOne({_id : followingUserId})
-
+    const followingUserData = await db.users.findOne({_id : followingUserId})
+    
     //Following
     await db.users.updateOne(
-        { _id: user._id },
-        { $addToSet: { following: followinUserData.artistName } }
+        { _id: new ObjectId(user._id) },
+        { $addToSet: { following: followingUserData.artistName } }
     )
 
     // Followers
@@ -77,7 +77,7 @@ router.patch("/api/users/unfollow", authenticateToken, async (req, res) => {
     const followinUserData = await db.users.findOne({_id : unfollowUserId})
     // Remove the unfollowUserId from the userId's following list
     await db.users.updateOne(
-        { _id: user._id },
+        { _id: new ObjectId(user._id) },
         { $pull: { following: followinUserData.artistName } }
     )
 
