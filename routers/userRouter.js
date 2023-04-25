@@ -89,5 +89,24 @@ router.patch("/api/users/unfollow", authenticateToken, async (req, res) => {
 
     res.send({ message: "User unfollowed successfully" })
 })
-  
+
+//Finds the following or follower on artistname
+router.get("/api/users/:state/:artistname", async (req, res) => {
+    const state = req.params.state
+    const artistName = req.params.artistname
+    const artist = await db.users.findOne({artistName : artistName})
+
+    if(state === "following"){
+        const followingUsers = db.users.find({artistName: {$in : artist.following}})
+        const userArray = await followingUsers.toArray();
+
+        res.status(200).send(userArray)
+    }else{
+        const followersUsers = db.users.find({artistName: {$in : artist.followers}})
+        const userArray = await followersUsers.toArray();
+
+        res.status(200).send(userArray)
+    }
+})
+
 export default router;
