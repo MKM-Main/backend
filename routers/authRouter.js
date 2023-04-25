@@ -34,6 +34,8 @@ router.post("/api/auth/signup", async (req, res) => {
   const newUser = req.body;
   newUser.password = await bcrypt.hash(newUser.password, 10);
   newUser.creationDate = new Date().toLocaleString("en-GB");
+  newUser.followers = []
+  newUser.following = []
   const emailExist = await db.users.find({ email: newUser.email }).toArray();
 
   if (emailExist.length !== 0) {

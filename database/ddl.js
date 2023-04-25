@@ -20,14 +20,16 @@ const insertData = async () => {
             "artistName": "Gram",
             "email": "malthegram22@gmail.com",
             "creationDate": new Date().toLocaleString("en-GB"),
-            "password": hashedPassword,
+            "password": bcrypt.hashSync("123", 10),
             "followers": [
                 "Funch",
                 "Qyvaden"
             ],
             "following": [
-                "Qyvaden"
-            ]
+                "Qyvaden",
+                "Funch"
+            ],
+            "profilePictureKey": "pp.jpeg"
         },
         {
             "firstName": "Kevin",
@@ -36,11 +38,14 @@ const insertData = async () => {
             "email": "funch@kevn.dk",
             "creationDate": new Date().toLocaleString("en-GB"),
             "password": bcrypt.hashSync("123", 10),
-            "followers": [],
+            "followers": [
+                "Gram"
+            ],
             "following": [
                 "Qyvaden",
                 "Gram"
-            ]
+            ],
+            "profilePictureKey": "pp1.jpeg"
         },
         {
             "firstName": "Michael",
@@ -55,9 +60,9 @@ const insertData = async () => {
             ],
             "following": [
                 "Gram"
-            ]
-        }
-    ])
+            ],
+            "profilePictureKey": "pp2.jpeg"
+        }])
 
     await db.posts.insertMany([
         {
