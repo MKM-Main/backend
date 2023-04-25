@@ -36,6 +36,7 @@ router.post("/api/auth/signup", async (req, res) => {
   newUser.creationDate = new Date().toLocaleString("en-GB");
   newUser.followers = []
   newUser.following = []
+  newUser.profilePictureKey = "blank_profile.webp"
   const emailExist = await db.users.find({ email: newUser.email }).toArray();
 
   if (emailExist.length !== 0) {
