@@ -1,6 +1,6 @@
 import {Router} from "express"
 import db from "../database/database.js"
-import { authenticateToken } from "./middelware/verifyJwt.js"
+import {authenticateToken} from "./middelware/verifyJwt.js"
 const router = Router()
 
 router.get('/forum', async (req, res) => {
@@ -10,7 +10,6 @@ router.get('/forum', async (req, res) => {
 
 router.get('/forum/:forumTitle', async (req, res) => {
     const forumToFind = req.params.forumTitle
-    console.log(forumToFind) 
     const forum = await db.posts.find({referenceName: forumToFind}).toArray()
     res.send({forum})
 })
@@ -21,17 +20,15 @@ router.get('/forum/post/:postTitle', async (req, res) => {
     res.send({post})
 })
 
-router.patch('/forum/forumtitle/:postTitle', authenticateToken, async (req, res)=>{
+router.patch('/forum/forumtitle/:postTitle', authenticateToken, async (req, res) => {
     const loggedInUser = req.user.artistName
     const postToUpdate = req.params.postTitle
     const newComment = req.body;
     newComment.author = loggedInUser;
-    newComment.rating = 0; 
+    newComment.rating = 0;
     newComment.timeStamp = new Date().toLocaleString("en-GB");
-    console.log(newComment)
-    const updateCommentArray = await db.posts.updateOne({postTitle: postToUpdate}, {$push:{comments: newComment}})
-    console.log(updateCommentArray)
-    res.send(updateCommentArray)
+    const updateCommentArray = await db.posts.updateOne({postTitle: postToUpdate}, {$push: {comments: newComment}})
+    res.send(newComment)
 })
 
 export default router
