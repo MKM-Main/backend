@@ -44,6 +44,9 @@ app.use(userRouter);
 import postRouter from "./routers/postRouter.js"
 app.use(postRouter);
 
+import forumRouter from "./routers/forumRouter.js"
+app.use(forumRouter);
+
 
 
 const PORT = process.env.PORT || 8080
