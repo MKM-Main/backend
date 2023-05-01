@@ -16,20 +16,6 @@ router.get('/profile', authenticateToken,(req, res) => {
     res.send({customMessage: req.user})
 })
 
-
-// router.get('/api/auth/verify/token', async (req, res) => {
-//   //Firstname, lastname, artistname, email, creationDate, followers[], following[]
-//   const userId = req.userId;
-//   const userEmail = req.userEmail;
-//   const userData = await db.users.findOne({email: userEmail})
-//   delete userData.password
-//   if (userData.email === userEmail && userData._id.toString() === userId){
-//     res.json(userData)
-//   } else{
-//     res.json({message: "auth failed"})
-//   }
-// });
-
 router.post("/api/auth/signup", async (req, res) => {
   const newUser = req.body;
   newUser.password = await bcrypt.hash(newUser.password, 10);

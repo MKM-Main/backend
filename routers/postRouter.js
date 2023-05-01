@@ -14,7 +14,7 @@ router.get("/api/posts/news", authenticateToken, async (req, res) => {
     res.status(200).send(postArray)
   });
 
-//Post on own profile
+//Posts on own profile
 router.get("/api/posts/wallposts/:artistName", async (req, res) => {
     const artistName = req.params.artistName;
 
@@ -25,7 +25,7 @@ router.get("/api/posts/wallposts/:artistName", async (req, res) => {
 })
 
 
-//Create a post from the user and reference is where the post is posted
+//Create a post from the user and reference is where the post is located
 router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
     const user = req.user
     const reference = req.params.reference
@@ -63,5 +63,17 @@ router.patch("/api/posts/comments/:reference/:search", authenticateToken, async 
       res.status(200).send(comment)
     }
 });
+
+router.delete("/api/posts/comments/:postid/:commentid", async (req, res) => {
+  try {
+    const postId = new ObjectId(req.params.postid)
+    const commentId = new ObjectId(req.params.commentid)
+
+    const update = db.posts.updateOne({_id: postId},{ $pull: { comments: { _id: commentId } } });
+    res.status(200).send(update)
+  } catch (error) {
+    res.status(500).send({ error: "Error deleting user" });
+  }
+})
 
 export default router;

@@ -20,15 +20,4 @@ router.get('/forum/post/:postTitle', async (req, res) => {
     res.send({post})
 })
 
-// router.patch('/forum/forumtitle/:postTitle', authenticateToken, async (req, res) => {
-//     const loggedInUser = req.user.artistName
-//     const postToUpdate = req.params.postTitle
-//     const newComment = req.body;
-//     newComment.author = loggedInUser;
-//     newComment.rating = 0;
-//     newComment.timeStamp = new Date().toLocaleString("en-GB");
-//     const updateCommentArray = await db.posts.updateOne({postTitle: postToUpdate}, {$push: {comments: newComment}})
-//     res.send(newComment)
-// })
-
 export default router
