@@ -1,9 +1,8 @@
 import express from "express"
+import fileUpload from "express-fileupload"
 import dotenv from "dotenv/config"
 
 const app = express()
-
-
 
 
 import cors from "cors"
@@ -15,6 +14,9 @@ app.use(cors({
 app.use(express.urlencoded({extended: true}))
 app.use(express.json())
 
+app.use(fileUpload({
+    limits: {fileSize: Infinity}
+}));
 
 import helmet from "helmet"
 app.use(helmet())
@@ -33,8 +35,6 @@ const sessionMiddleware = session({
 app.use(sessionMiddleware)
 
 
-
-
 import authRouter from "./routers/authRouter.js"
 app.use(authRouter);
 
@@ -46,7 +46,6 @@ app.use(postRouter);
 
 import forumRouter from "./routers/forumRouter.js"
 app.use(forumRouter);
-
 
 
 const PORT = process.env.PORT || 8080
