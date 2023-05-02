@@ -64,27 +64,32 @@ router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
     }
 });
 
-router.patch("/api/posts/comments/:reference/:search", authenticateToken, async (req, res) => {
-    const userLoggedIn = req.user.artistName;
-    const comment = req.body;
-    comment.commentAuthor = userLoggedIn;
+
+  router.patch("/api/posts/comments/:reference/:search", authenticateToken, async (req, res) => {
+  const userLoggedIn = req.user.artistName;
+  const comment = req.body;
+  comment.commentAuthor = userLoggedIn;
     comment._id = new ObjectId();
     comment.rating = 0;
-    comment.timeCreated = new Date().toLocaleString("en-GB");
 
+    comment.timeCreated = new Date().toLocaleString("en-GB"); 
+  
     if (req.params.reference === "wallposts") {
-        const id = req.params.search
-        const result = await db.posts.updateOne(
-            {_id: new ObjectId(id)},
-            {$push: {comments: comment}}
-        );
-        res.status(200).send({message: comment});
+      const id = req.params.search
+      const result = await db.posts.updateOne(
+        { _id: new ObjectId(id) },
+        { $push: { comments: comment } }
+      );
+      res.status(200).send({ message: comment });
     } else {
-        const postTitle = req.params.search
-        const updateCommentArray = await db.posts.updateOne({postTitle: postTitle}, {$push: {comments: comment}})
-        res.status(200).send(comment)
+      const postTitle = req.params.search
+      const updateCommentArray = await db.posts.updateOne(
+        { postTitle: postTitle },
+        { $push: { comments: { ...comment, _id: new ObjectId() } } }
+      )
+      res.status(200).send(comment)
     }
-});
+  });
 
 
 router.delete("/api/posts/comments/:postid/:commentid", async (req, res) => {
