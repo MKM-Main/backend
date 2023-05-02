@@ -95,7 +95,9 @@ const insertData = async () => {
             "body": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
             "rating": 0,
             "referenceName": "Vi elsker Drake",
+            "postTitle": "vi elsker drake Post 1",
             "artistName": "Gram",
+            "timeStamp": new Date().toLocaleString("en-GB"),
             "comments": [
                 {
                     "commentAuthor": "Funch",
@@ -116,8 +118,10 @@ const insertData = async () => {
         {
             "body": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
             "rating": 0,
-            "referenceName": "Indie",
+            "referenceName": "Vi hader Drake",
+            "postTitle": "vi hader drake Post 1",
             "artistName": "Funch",
+            "timeStamp": new Date().toLocaleString("en-GB"),
             "comments": [
                 {
                     "commentAuthor": "Qyvaden",
@@ -137,8 +141,10 @@ const insertData = async () => {
         }, {
             "body": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
             "rating": 0,
-            "referenceName": "Indie",
+            "referenceName": "Vi hader Drake",
+            "postTitle": "vi hader drake Post 2",
             "artistName": "Qyvaden",
+            "timeStamp": new Date().toLocaleString("en-GB"),
             "comments": [
                 {
                     "commentAuthor": "Gram",
