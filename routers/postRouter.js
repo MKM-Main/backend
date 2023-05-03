@@ -57,12 +57,14 @@ router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
     }
 
     try {
+        Object.keys(post).forEach(key => post[key] === "undefined" ? delete post[key] : {});
         await db.posts.insertOne(post)
         res.status(200).send({newPost: post});
-    } catch (err) {
-        res.status(400).send({message: err.message});
+    } catch (error) {
+        res.status(400).send({message: error.message});
     }
 });
+
 
 router.patch("/api/posts/comments/:reference/:search", authenticateToken, async (req, res) => {
     const userLoggedIn = req.user.artistName;
@@ -70,7 +72,7 @@ router.patch("/api/posts/comments/:reference/:search", authenticateToken, async 
     comment.commentAuthor = userLoggedIn;
     comment._id = new ObjectId();
     comment.rating = 0;
-    comment.timeCreated = new Date().toLocaleString("en-GB");
+    comment.timeStamp = new Date().toLocaleString("en-GB");
 
     if (req.params.reference === "wallposts") {
         const id = req.params.search
@@ -88,15 +90,37 @@ router.patch("/api/posts/comments/:reference/:search", authenticateToken, async 
 
 
 router.delete("/api/posts/comments/:postid/:commentid", async (req, res) => {
-  try {
-    const postId = new ObjectId(req.params.postid)
-    const commentId = new ObjectId(req.params.commentid)
+    try {
+        const postId = new ObjectId(req.params.postid)
+        const commentId = new ObjectId(req.params.commentid)
 
-    const update = db.posts.updateOne({_id: postId},{ $pull: { comments: { _id: commentId } } });
-    res.status(200).send(update)
-  } catch (error) {
-    res.status(500).send({ error: "Error deleting user" });
-  }
+        const update = db.posts.updateOne({_id: postId}, {$pull: {comments: {_id: commentId}}});
+        res.status(200).send(update)
+    } catch (error) {
+        res.status(500).send({error: "Error deleting user"});
+    }
+})
+
+router.delete("/api/posts/:postid", async (req, res) => {
+    const postId = new ObjectId(req.params.postid)
+
+    try {
+        const postData = await db.posts.find({_id: postId}).project({keyReference: 1, _id: 0}).toArray()
+
+        await db.posts.deleteOne({_id: postId})
+
+        if (postData[0].keyReference) {
+            await s3.deleteObject({
+                Bucket: "mkm-mcb",
+                Key: postData[0].keyReference
+            }).promise()
+        }
+
+        res.status(200).send({data: "deleted post"})
+    } catch (error) {
+        res.status(500).send(error)
+    }
+
 })
 
 export default router;
