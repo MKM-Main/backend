@@ -43,6 +43,7 @@ router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
 
     post.artistName = user.artistName
     post.referenceName = reference
+    post.rating = 0
     post.comments = []
     post.timeStamp = new Date().toLocaleString("en-GB");
 
@@ -101,7 +102,7 @@ router.delete("/api/posts/comments/:postid/:commentid", async (req, res) => {
     }
 })
 
-router.delete("/api/posts/:postid", async (req, res) => {
+router.delete("/api/posts/:postid", authenticateToken, async (req, res) => {
     const postId = new ObjectId(req.params.postid)
 
     try {
