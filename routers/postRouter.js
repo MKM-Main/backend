@@ -67,6 +67,7 @@ router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
 });
 
 
+
 router.patch("/api/posts/comments/:reference/:search", authenticateToken, async (req, res) => {
     const userLoggedIn = req.user.artistName;
     const comment = req.body;
