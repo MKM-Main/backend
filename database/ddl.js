@@ -182,6 +182,22 @@ const insertData = async () => {
         },
     ])
 
+    await db.conversations.insertMany([
+        {   
+            "messages": [{
+                "_id": new ObjectId(),
+                "participants": ["Funch, Qyvaden"],
+                "body": "Hello how are you i am a message",
+                "timeStamp": new Date().toLocaleString("en-GB"),
+            },
+            {
+                "_id": new ObjectId(),
+                "body": "Hello i am good how about you",
+                "timeStamp": new Date().toLocaleString("en-GB"),
+            }
+        ]
+        }
+    ])
 }
 
 await cleanDatabase()
