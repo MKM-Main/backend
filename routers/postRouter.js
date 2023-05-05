@@ -27,10 +27,17 @@ router.get("/api/posts/news", authenticateToken, async (req, res) => {
 router.get("/api/posts/wallposts/:artistName", async (req, res) => {
     const artistName = req.params.artistName;
 
-    const wallPosts = db.posts.find({referenceName: "wallpost", artistName: artistName});
+    const wallPosts = await db.posts.find({referenceName: "wallpost", artistName: artistName});
     const postArray = await wallPosts.toArray();
 
     res.status(200).send(postArray)
+})
+
+router.get("/api/posts/hyped", async (req, res) => {
+    const postEligibleForHype = await db.posts.find({
+        $expr: {$gte: [{$size: "$rating"}, 2]}
+    }).toArray()
+    res.status(200).send(postEligibleForHype)
 })
 
 
@@ -43,6 +50,7 @@ router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
 
     post.artistName = user.artistName
     post.referenceName = reference
+    post.rating = []
     post.comments = []
     post.timeStamp = new Date().toLocaleString("en-GB");
 
@@ -57,48 +65,88 @@ router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
     }
 
     try {
+        Object.keys(post).forEach(key => post[key] === "undefined" ? delete post[key] : {});
         await db.posts.insertOne(post)
         res.status(200).send({newPost: post});
-    } catch (err) {
-        res.status(400).send({message: err.message});
+    } catch (error) {
+        res.status(400).send({message: error.message});
     }
 });
 
 
-
-  router.patch("/api/posts/comments/:reference/:search", authenticateToken, async (req, res) => {
+router.patch("/api/posts/comments/:reference/:search", authenticateToken, async (req, res) => {
     const userLoggedIn = req.user.artistName;
     const comment = req.body;
     comment.commentAuthor = userLoggedIn;
     comment._id = new ObjectId();
     comment.rating = 0;
-    comment.timeCreated = new Date().toLocaleString("en-GB"); 
-    
-    if(req.params.reference === "wallposts"){
-      const id = req.params.search
-      const result = await db.posts.updateOne(
-              { _id: new ObjectId(id) },
-              { $push: { comments: comment } }
-            );
-            res.status(200).send({ message: comment });
-    }else{
-      const postTitle = req.params.search
-      const updateCommentArray = await db.posts.updateOne({postTitle: postTitle}, {$push: {comments: comment}})
-      res.status(200).send(comment)
+    comment.timeStamp = new Date().toLocaleString("en-GB");
+
+    if (req.params.reference === "wallposts") {
+        const id = req.params.search
+        const result = await db.posts.updateOne(
+            {_id: new ObjectId(id)},
+            {$push: {comments: comment}}
+        );
+        res.status(200).send({message: comment});
+    } else {
+        const postTitle = req.params.search
+        const updateCommentArray = await db.posts.updateOne({postTitle: postTitle}, {$push: {comments: comment}})
+        res.status(200).send(comment)
     }
 });
 
+router.patch("/api/posts/:postid", authenticateToken, async (req, res) => {
+    const postId = new ObjectId(req.params.postid)
+    const userWhoRated = req.body.loggedInUser
+
+    try {
+        const checkIfUserAlreadyRatedPost = await db.posts.find({_id: postId}).toArray()
+        if (checkIfUserAlreadyRatedPost[0].rating.includes(userWhoRated)) {
+            const removeUserFromRatingArray = await db.posts.updateOne({_id: postId}, {$pull: {rating: userWhoRated}})
+            res.status(200).send({length: checkIfUserAlreadyRatedPost[0]?.rating?.length - 1})
+        } else {
+            const addUserToRatingArray = await db.posts.updateOne({_id: postId}, {$push: {rating: userWhoRated}})
+            res.status(200).send({length: checkIfUserAlreadyRatedPost[0]?.rating?.length + 1})
+        }
+    } catch (error) {
+        res.status(403).send({error: error.message})
+    }
+})
+
 
 router.delete("/api/posts/comments/:postid/:commentid", async (req, res) => {
-  try {
-    const postId = new ObjectId(req.params.postid)
-    const commentId = new ObjectId(req.params.commentid)
+    try {
+        const postId = new ObjectId(req.params.postid)
+        const commentId = new ObjectId(req.params.commentid)
 
-    const update = db.posts.updateOne({_id: postId},{ $pull: { comments: { _id: commentId } } });
-    res.status(200).send(update)
-  } catch (error) {
-    res.status(500).send({ error: "Error deleting user" });
-  }
+        const update = db.posts.updateOne({_id: postId}, {$pull: {comments: {_id: commentId}}});
+        res.status(200).send(update)
+    } catch (error) {
+        res.status(500).send({error: "Error deleting user"});
+    }
+})
+
+router.delete("/api/posts/:postid", authenticateToken, async (req, res) => {
+    const postId = new ObjectId(req.params.postid)
+
+    try {
+        const postData = await db.posts.find({_id: postId}).project({keyReference: 1, _id: 0}).toArray()
+
+        await db.posts.deleteOne({_id: postId})
+
+        if (postData[0].keyReference) {
+            await s3.deleteObject({
+                Bucket: "mkm-mcb",
+                Key: postData[0].keyReference
+            }).promise()
+        }
+
+        res.status(200).send({data: "deleted post"})
+    } catch (error) {
+        res.status(500).send(error)
+    }
+
 })
 
 export default router;

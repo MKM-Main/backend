@@ -69,8 +69,13 @@ app.use(postRouter);
 import forumRouter from "./routers/forumRouter.js"
 app.use(forumRouter);
 
+
 import conversationRouter from "./routers/conversationRouter.js"
 app.use(conversationRouter);
+
+import adminRouter from "./routers/adminRouter.js"
+app.use(adminRouter)
+
 
 
 const PORT = process.env.PORT || 8080
