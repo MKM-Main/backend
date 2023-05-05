@@ -19,6 +19,7 @@ const insertData = async () => {
             "firstName": "Malthe",
             "lastName": "Gram",
             "artistName": "Gram",
+            "role": "admin",
             "email": "malthegram22@gmail.com",
             "creationDate": new Date().toLocaleString("en-GB"),
             "password": bcrypt.hashSync("123", 10),
@@ -36,6 +37,7 @@ const insertData = async () => {
             "firstName": "Kevin",
             "lastName": "Hansen",
             "artistName": "Funch",
+            "role": "admin",
             "email": "funch@kevn.dk",
             "creationDate": new Date().toLocaleString("en-GB"),
             "password": bcrypt.hashSync("123", 10),
@@ -53,6 +55,7 @@ const insertData = async () => {
             "lastName": "Dyvad",
             "artistName": "Qyvaden",
             "email": "dyvad@michael.dk",
+            "role": "user",
             "creationDate": new Date().toLocaleString("en-GB"),
             "password": bcrypt.hashSync("123", 10),
             "followers": [
@@ -167,6 +170,7 @@ const insertData = async () => {
     await db.forums.insertMany([
         {
             "forumTitle": "Hadeklubben",
+            "verified": true,
             "tags": [
                 "metal"
             ],
@@ -174,6 +178,7 @@ const insertData = async () => {
         },
         {
             "forumTitle": "Vi hader Drake",
+            "verified": true,
             "tags": [
                 "rap"
             ],
@@ -181,6 +186,24 @@ const insertData = async () => {
         },
         {
             "forumTitle": "Vi elsker Drake",
+            "verified": true,
+            "tags": [
+                "rap"
+            ],
+            "creationDate": new Date().toLocaleString("en-GB")
+        },
+
+        {
+            "forumTitle": "MGP FOR TOODLERS",
+            "verified": false,
+            "tags": [
+                "rap"
+            ],
+            "creationDate": new Date().toLocaleString("en-GB")
+        },
+        {
+            "forumTitle": "VIL MEGA GERNE HAVE SLIK",
+            "verified": false,
             "tags": [
                 "rap"
             ],
