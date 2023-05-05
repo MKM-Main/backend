@@ -1,9 +1,31 @@
 import express from "express"
 import fileUpload from "express-fileupload"
 import dotenv from "dotenv/config"
+import http from "http";
+
+import { Server } from "socket.io";
 
 const app = express()
 
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: ["http://localhost:5173"],
+        credentials: true
+    }
+})
+io.on("connect", socket => {
+    socket.on("new message", message => {
+        io.emit("new message", {
+            data: {
+                dataMessage: message[0],
+                params: message[1],
+                loggedInUser: message[2],
+                timestamp: new Date().toLocaleTimeString("en-GB"),
+            }
+        })
+    })
+})
 
 import cors from "cors"
 app.use(cors({
@@ -47,11 +69,16 @@ app.use(postRouter);
 import forumRouter from "./routers/forumRouter.js"
 app.use(forumRouter);
 
+
+import conversationRouter from "./routers/conversationRouter.js"
+app.use(conversationRouter);
+
 import adminRouter from "./routers/adminRouter.js"
 app.use(adminRouter)
 
 
+
 const PORT = process.env.PORT || 8080
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
