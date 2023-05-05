@@ -27,10 +27,17 @@ router.get("/api/posts/news", authenticateToken, async (req, res) => {
 router.get("/api/posts/wallposts/:artistName", async (req, res) => {
     const artistName = req.params.artistName;
 
-    const wallPosts = db.posts.find({referenceName: "wallpost", artistName: artistName});
+    const wallPosts = await db.posts.find({referenceName: "wallpost", artistName: artistName});
     const postArray = await wallPosts.toArray();
 
     res.status(200).send(postArray)
+})
+
+router.get("/api/posts/hyped", async (req, res) => {
+    const postEligibleForHype = await db.posts.find({
+        $expr: {$gte: [{$size: "$rating"}, 2]}
+    }).toArray()
+    res.status(200).send(postEligibleForHype)
 })
 
 
@@ -43,7 +50,7 @@ router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
 
     post.artistName = user.artistName
     post.referenceName = reference
-    post.rating = 0
+    post.rating = []
     post.comments = []
     post.timeStamp = new Date().toLocaleString("en-GB");
 
@@ -67,7 +74,6 @@ router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
 });
 
 
-
 router.patch("/api/posts/comments/:reference/:search", authenticateToken, async (req, res) => {
     const userLoggedIn = req.user.artistName;
     const comment = req.body;
@@ -89,6 +95,24 @@ router.patch("/api/posts/comments/:reference/:search", authenticateToken, async 
         res.status(200).send(comment)
     }
 });
+
+router.patch("/api/posts/:postid", authenticateToken, async (req, res) => {
+    const postId = new ObjectId(req.params.postid)
+    const userWhoRated = req.body.loggedInUser
+
+    try {
+        const checkIfUserAlreadyRatedPost = await db.posts.find({_id: postId}).toArray()
+        if (checkIfUserAlreadyRatedPost[0].rating.includes(userWhoRated)) {
+            const removeUserFromRatingArray = await db.posts.updateOne({_id: postId}, {$pull: {rating: userWhoRated}})
+            res.status(200).send({length: checkIfUserAlreadyRatedPost[0]?.rating?.length - 1})
+        } else {
+            const addUserToRatingArray = await db.posts.updateOne({_id: postId}, {$push: {rating: userWhoRated}})
+            res.status(200).send({length: checkIfUserAlreadyRatedPost[0]?.rating?.length + 1})
+        }
+    } catch (error) {
+        res.status(403).send({error: error.message})
+    }
+})
 
 
 router.delete("/api/posts/comments/:postid/:commentid", async (req, res) => {
