@@ -24,4 +24,18 @@ router.get('/forum/post/:postTitle', async (req, res) => {
     res.send({post})
 })
 
+router.post("/api/forum", async (req, res) => {
+    try {
+        const forumRequest = req.body
+        forumRequest.creationDate = new Date().toLocaleString("en-GB");
+        forumRequest.tags = []
+        forumRequest.verified = false
+        const post = await db.forums.insertOne(forumRequest)
+        res.sendStatus(200)
+    } catch (error) {
+      console.error(error)
+      res.status(500).send({ error: "Error Creating forum" })
+    }
+  })
+
 export default router
