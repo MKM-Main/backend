@@ -10,6 +10,7 @@ const cleanDatabase = async () => {
         await db.users.drop()
         await db.forums.drop()
         await db.posts.drop()
+        await db.conversations.drop()
     }
 }
 
@@ -212,20 +213,23 @@ const insertData = async () => {
     ])
 
     await db.conversations.insertMany([
-        {   
-            "messages": [{
-                "_id": new ObjectId(),
-                "participants": ["Funch, Qyvaden"],
-                "body": "Hello how are you i am a message",
-                "timeStamp": new Date().toLocaleString("en-GB"),
-            },
-            {
-                "_id": new ObjectId(),
-                "body": "Hello i am good how about you",
-                "timeStamp": new Date().toLocaleString("en-GB"),
-            }
-        ]
-        }
+        {
+            participants: [ 'Qyvaden', 'Gram' ],
+            messages: [
+              {
+                body: 'hello',
+                sender: 'Qyvaden',
+                _id: new ObjectId(),
+                timeStamp: '05/05/2023, 12:50:38'
+              },
+              {
+                body: 'Hej Michael',
+                sender: 'Gram',
+                _id: new ObjectId(),
+                timeStamp: '05/05/2023, 13:34:32'
+              }
+            ]
+          }
     ])
 }
 
