@@ -13,6 +13,12 @@ const s3 = new AWS.S3({
     }
 );
 
+let tags = [
+    {name: "metal", checked: false},
+    {name: "rap", checked: false},
+    {name: "pop", checked: false}
+]
+
 //News page
 router.get("/api/posts/news", authenticateToken, async (req, res) => {
     const userLoggedIn = req.user
@@ -33,6 +39,10 @@ router.get("/api/posts/wallposts/:artistName", async (req, res) => {
     res.status(200).send(postArray)
 })
 
+router.get("/api/posts/tags", (req, res) => {
+    res.status(200).send({tags})
+})
+
 router.get("/api/posts/hyped", async (req, res) => {
     const postEligibleForHype = await db.posts.find({
         $expr: {$gte: [{$size: "$rating"}, 2]}
@@ -47,6 +57,7 @@ router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
     const user = req.user
     const reference = req.params.reference
     const post = req.body
+    post.tags = JSON.parse(req.body.tags)
 
     post.artistName = user.artistName
     post.referenceName = reference
