@@ -13,6 +13,13 @@ const s3 = new AWS.S3({
     }
 );
 
+
+//get all posts
+router.get("/api/posts", async (req, res) => {
+    const posts = await db.posts.find().toArray()
+    res.send(posts)
+})
+
 //News page
 router.get("/api/posts/news", authenticateToken, async (req, res) => {
     const userLoggedIn = req.user
@@ -114,6 +121,77 @@ router.patch("/api/posts/:postid", authenticateToken, async (req, res) => {
     }
 })
 
+router.patch("/api/report/:id", authenticateToken, async (req, res) => {
+    try {
+      const posts = await db.posts.find().toArray();
+      const collection = req.body.collection;
+      const link = req.body.link;
+      const description = req.body.description;
+      const reason = req.body.reason;
+      const id = new ObjectId(req.params.id);
+      const postId = new ObjectId(req.body.postId);
+      const loggedInUser = req.user.artistName;
+    
+      if (collection === "posts") {
+        if (req.body.postId) {
+          const postToUpdate = posts.find((post) => post._id.equals(postId));
+          if (!postToUpdate) {
+            return res.status(404).send("Post not found");
+          }
+  
+          const { comments } = postToUpdate;
+          const updatedComments = await Promise.all(
+            comments.map(async (comment) => {
+              if (comment._id.equals(id)) {
+                return {
+                  ...comment,
+                  reported: [...comment.reported, {
+                    userWhoReported: loggedInUser,
+                    timeStamp: new Date().toLocaleString("en-GB"),
+                    link: link,
+                    reason: reason,
+                    description: description}]
+                };
+              } else {
+                return comment;
+              }
+            })
+          );
+          const reportPost = await db.posts.updateOne(
+            { _id: postId },
+            { $set: { comments: updatedComments } }
+          );
+          return res.sendStatus(200);
+        } else {
+          const reportPost = await db.posts.updateOne(
+            { _id: id },
+            { $push: { reported: {
+                userWhoReported: loggedInUser,
+                timeStamp: new Date().toLocaleString("en-GB"),
+                link: link,
+                reason: reason,
+                description: description
+            }}}
+          );
+          return res.sendStatus(200);
+        }
+      } else {
+        const reportUser = await db[collection].updateOne(
+          { _id: id },
+          { $push: { reported: {
+            userWhoReported: loggedInUser, 
+            timeStamp: new Date().toLocaleString("en-GB"),
+            link: link,
+            reason: reason,
+            description: description}}}
+        );
+        return res.sendStatus(200);
+      }
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Internal server error");
+    }
+  });
 
 router.delete("/api/posts/comments/:postid/:commentid", async (req, res) => {
     try {
