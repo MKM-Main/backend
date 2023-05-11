@@ -45,7 +45,8 @@ const insertData = async () => {
             "creationDate": new Date().toLocaleString("en-GB"),
             "password": bcrypt.hashSync("123", 10),
             "followers": [
-                "Gram"
+                "Gram",
+                "Qyvaden"
             ],
             "following": [
                 "Qyvaden",
@@ -67,7 +68,8 @@ const insertData = async () => {
                 "Gram"
             ],
             "following": [
-                "Gram"
+                "Gram",
+                "Funch"
             ],
             "profilePictureKey": "pp2.jpeg"
         }])
