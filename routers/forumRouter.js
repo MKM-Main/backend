@@ -13,9 +13,18 @@ router.get('/forum', async (req, res) => {
 })
 
 router.get('/forum/:forumTitle', async (req, res) => {
+    try{
     const forumToFind = replaceHyphensWithSpaces(req.params.forumTitle)
     const forum = await db.posts.find({referenceName: forumToFind}).toArray()
-    res.send({forum})
+    console.log(forum)
+    if(forum.length === 0){
+        res.status(200).send({forum})
+    } else {
+        res.status(200).send({forum, title: req.params.forumTitle})
+    }
+    } catch(err){
+        res.status(500).send({message:"server errror"})
+    }
 })
 
 router.get('/forum/post/:postTitle', async (req, res) => {
@@ -24,12 +33,14 @@ router.get('/forum/post/:postTitle', async (req, res) => {
     res.send({post})
 })
 
-router.post("/api/forum", async (req, res) => {
+router.post("/api/forum", authenticateToken, async (req, res) => {
     try {
+        const userLoggedIn = req.user
         const forumRequest = req.body
         forumRequest.creationDate = new Date().toLocaleString("en-GB");
         forumRequest.tags = []
         forumRequest.verified = false
+
         const post = await db.forums.insertOne(forumRequest)
         res.sendStatus(200)
     } catch (error) {

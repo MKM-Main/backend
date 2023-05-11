@@ -32,7 +32,7 @@ router.get("/api/posts", async (req, res) => {
 router.get("/api/posts/news", authenticateToken, async (req, res) => {
     const userLoggedIn = req.user
     const dbUser = await db.users.findOne({_id: new ObjectId(userLoggedIn._id)})
-    const posts = db.posts.find({artistName: {$in: dbUser.following}}).sort({"timeStamp": -1})
+    const posts = db.posts.find({artistName: {$in: dbUser?.following}}).sort({"timeStamp": -1})
     const postArray = await posts.toArray();
 
     res.status(200).send(postArray)
@@ -138,7 +138,8 @@ router.patch("/api/posts/comments/:reference/:search", authenticateToken, async 
     const comment = req.body;
     comment.commentAuthor = userLoggedIn;
     comment._id = new ObjectId();
-    comment.rating = []
+    comment.rating = [];
+    comment.reported = []
     comment.timeStamp = new Date().toLocaleString("en-GB");
 
     if (req.params.reference === "wallposts") {
