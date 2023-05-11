@@ -56,6 +56,8 @@ router.get("/api/posts/hyped", async (req, res) => {
     const postEligibleForHype = await db.posts.find({
         $expr: {$gte: [{$size: "$rating"}, 2]}
     }).toArray()
+    
+
     res.status(200).send(postEligibleForHype)
 })
 
@@ -93,13 +95,50 @@ router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
     }
 });
 
+router.patch("/api/posts/comments/:commentId", authenticateToken, async (req, res) => {
+    const commentId = new ObjectId(req.params.commentId);
+
+    try {
+        const post = await db.posts.findOne({"comments._id": commentId})
+
+        if (!post) {
+            res.status(404).send({error: "Post not found"});
+            return
+        }
+        const comment = post.comments.find((comment) => comment._id.equals(commentId));
+
+        if (!comment) {
+            res.status(404).send({error: "Comment not found"});
+            return
+        }
+        if (comment.rating.includes(req.user.artistName)) {
+            // User already rated the comment, so remove the rating
+            await db.posts.updateOne(
+                {"comments._id": commentId},
+                {$pull: {"comments.$.rating": req.user.artistName}}
+            )
+            res.status(200).send({length: comment.rating.length - 1});
+        } else {
+            // User has not rated the comment, so add the rating
+            await db.posts.updateOne(
+                {"comments._id": commentId},
+                {$push: {"comments.$.rating": req.user.artistName}}
+            );
+            res.status(200).send({length: comment.rating.length + 1});
+        }
+    } catch (error) {
+        res.status(500).send({error: error.message});
+    }
+
+
+})
 
 router.patch("/api/posts/comments/:reference/:search", authenticateToken, async (req, res) => {
     const userLoggedIn = req.user.artistName;
     const comment = req.body;
     comment.commentAuthor = userLoggedIn;
     comment._id = new ObjectId();
-    comment.rating = 0;
+    comment.rating = []
     comment.timeStamp = new Date().toLocaleString("en-GB");
 
     if (req.params.reference === "wallposts") {
