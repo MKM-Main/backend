@@ -13,17 +13,13 @@ router.get('/forum', async (req, res) => {
 })
 
 router.get('/forum/:forumTitle', async (req, res) => {
-    try{
     const forumToFind = replaceHyphensWithSpaces(req.params.forumTitle)
-    const forum = await db.posts.find({referenceName: forumToFind}).toArray()
-    console.log(forum)
-    if(forum.length === 0){
-        res.status(200).send({forum})
+    const forum = await db.forums.find({forumTitle: forumToFind}).toArray()
+    if (forum.length !== 0) {
+        const forumData = await db.posts.find({referenceName: forumToFind}).toArray()
+        res.status(200).send({forumData, title: req.params.forumTitle})
     } else {
-        res.status(200).send({forum, title: req.params.forumTitle})
-    }
-    } catch(err){
-        res.status(500).send({message:"server errror"})
+        res.status(404).send({message: "No forum with that title"})
     }
 })
 
@@ -44,9 +40,9 @@ router.post("/api/forum", authenticateToken, async (req, res) => {
         const post = await db.forums.insertOne(forumRequest)
         res.sendStatus(200)
     } catch (error) {
-      console.error(error)
-      res.status(500).send({ error: "Error Creating forum" })
+        console.error(error)
+        res.status(500).send({error: "Error Creating forum"})
     }
-  })
+})
 
 export default router
