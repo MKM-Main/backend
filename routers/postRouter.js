@@ -32,10 +32,20 @@ router.get("/api/posts", async (req, res) => {
 router.get("/api/posts/news", authenticateToken, async (req, res) => {
     const userLoggedIn = req.user
     const dbUser = await db.users.findOne({_id: new ObjectId(userLoggedIn._id)})
+    
+    if (dbUser !== null){
     const posts = db.posts.find({artistName: {$in: dbUser?.following}}).sort({"timeStamp": -1})
     const postArray = await posts.toArray();
-
-    res.status(200).send(postArray)
+    console.log(postArray)
+    const filteredArray = postArray.filter(post => post.referenceName === "wallpost")
+    console.log(filteredArray)
+    res.status(200).send(filteredArray)
+    } 
+    if (dbUser === null){
+        res.status(200).send({message: "no posts"})
+    } else{
+        res.status(500).send()
+    }
 });
 
 //Posts on own profile
