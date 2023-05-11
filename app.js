@@ -15,17 +15,21 @@ const io = new Server(server, {
     }
 })
 io.on("connect", socket => {
-    socket.on("new message", message => {
-        io.emit("new message", {
-            data: {
+    socket.on("new message", async message => {
+        try {
+            const messageData = {
                 dataMessage: message[0],
                 params: message[1],
                 loggedInUser: message[2],
-                timestamp: new Date().toLocaleTimeString("en-GB"),
-            }
-        })
-    })
-})
+                loggedInArtistname: message[3],
+                timeStamp: new Date().toLocaleString("en-GB")
+            };
+            io.emit("new message", { data: messageData });
+        } catch (error) {
+            console.error(error);
+        }
+    });
+});
 
 import cors from "cors"
 app.use(cors({
