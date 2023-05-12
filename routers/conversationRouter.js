@@ -25,7 +25,7 @@ router.get("/api/conversations/:conversationid", authenticateToken, async (req, 
 //Find all conversations on a logged in user
 router.get("/api/conversations", authenticateToken, async (req, res) => {
   const user = req.user.artistName;
-  const conversations = await db.conversations.find({ participants: { $in: [user] } }).project({ participants: { $elemMatch: { $ne: user } }, timeStamp: 1 }).sort({ timeStamp: -1 }).toArray();
+  const conversations = await db.conversations.find({ participants: { $in: [user] } }).project({ participants: { $elemMatch: { $ne: user } }, timeStamp: 1, read: 1, sender: 1 }).sort({ timeStamp: -1 }).toArray();
   
   const arrayParticipants = conversations.map(conversation => conversation.participants).flat();
   const findUsers = await db.users.find({ artistName: { $in: arrayParticipants } }).project({ profilePictureKey: 1, artistName: 1}).toArray();
@@ -47,14 +47,16 @@ router.post("/api/conversations/:receiver", authenticateToken, async (req, res) 
     conversation.participants = [sender, receiver];
     conversation.messages = [];
     conversation.timeStamp = new Date().toLocaleString("en-GB");
-
+    conversation.read = false;
+    conversation.sender = sender;
     const existingConversation = await db.conversations.findOne({participants: {$all: [sender, receiver]}});
     if(existingConversation){
       res.send({message: "Conversation already exist"})
     }else{
       const insertConversation = await db.conversations.insertOne(conversation);
-      const getImg = await db.users.findOne({artistName: receiver})
-      res.status(200).send([{participants: [receiver], _id: insertConversation.insertedId, profilePictureKey: getImg.profilePictureKey, timeStamp: conversation.timeStamp}]);
+      const getImgReceiver = await db.users.findOne({artistName: receiver})
+      const getImgSender = await db.users.findOne({artistName: sender})
+      res.status(200).send([{receiver: [receiver], sender: [sender], _id: insertConversation.insertedId, profilePictureKeyReceiver: getImgReceiver.profilePictureKey, profilePictureKeySender: getImgSender.profilePictureKey , timeStamp: conversation.timeStamp}]);
     }
 })
 
@@ -77,10 +79,19 @@ router.patch("/api/conversations/messages/:conversationid", authenticateToken, a
     message.timeStamp = timeStamp
     const updateConversation = await db.conversations.updateOne(
       { _id: new ObjectId(conversationId) },
-      { $set: { timeStamp: timeStamp } }
+      { $set: { timeStamp: timeStamp, read: false, sender: user.artistName} }
     );
     const insertMessage = await db.conversations.updateOne({ _id: new ObjectId(conversationId) }, { $push: { messages: message } });
     res.status(200).send({ message: message });
+})
+
+router.patch("/api/conversations/read/:coversationid", authenticateToken, async (req, res) => {
+    const conversationId = new ObjectId(req.params.coversationid);
+    const updateConversation = await db.conversations.updateOne(
+      { _id: conversationId},
+      { $set: { read: true } }
+    );
+    res.status(200).send(updateConversation)
 })
 
 router.delete("/api/conversations/:conversationid", async (req, res) => {
