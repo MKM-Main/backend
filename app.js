@@ -3,7 +3,7 @@ import fileUpload from "express-fileupload"
 import dotenv from "dotenv/config"
 import http from "http";
 
-import { Server } from "socket.io";
+import {Server} from "socket.io";
 
 const app = express()
 
@@ -24,7 +24,7 @@ io.on("connect", socket => {
                 loggedInArtistname: message[3],
                 timeStamp: new Date().toLocaleString("en-GB")
             };
-            io.emit("new message", { data: messageData });
+            io.emit("new message", {data: messageData});
         } catch (error) {
             console.error(error);
         }
@@ -91,6 +91,8 @@ app.use(conversationRouter);
 import adminRouter from "./routers/adminRouter.js"
 app.use(adminRouter)
 
+import merchRouter from "./routers/merchRouter.js";
+app.use(merchRouter)
 
 
 const PORT = process.env.PORT || 8080

@@ -22,6 +22,7 @@ const insertData = async () => {
             "artistName": "Gram",
             "role": "admin",
             "reported": [],
+            "merch": [],
             "email": "malthegram22@gmail.com",
             "creationDate": new Date().toLocaleString("en-GB"),
             "password": bcrypt.hashSync("123", 10),
@@ -33,13 +34,14 @@ const insertData = async () => {
                 "Qyvaden",
                 "Funch"
             ],
-            "profilePictureKey": "pp.jpeg"
+            "profilePictureKey": "pp1.jpeg"
         },
         {
             "firstName": "Kevin",
             "lastName": "Hansen",
             "artistName": "Funch",
             "reported": [],
+            "merch": [],
             "role": "admin",
             "email": "funch@kevn.dk",
             "creationDate": new Date().toLocaleString("en-GB"),
@@ -61,6 +63,7 @@ const insertData = async () => {
             "email": "dyvad@michael.dk",
             "role": "user",
             "reported": [],
+            "merch": [],
             "creationDate": new Date().toLocaleString("en-GB"),
             "password": bcrypt.hashSync("123", 10),
             "followers": [
@@ -231,22 +234,22 @@ const insertData = async () => {
 
     await db.conversations.insertMany([
         {
-            participants: [ 'Qyvaden', 'Gram' ],
+            participants: ['Qyvaden', 'Gram'],
             messages: [
-              {
-                body: 'hello',
-                sender: 'Qyvaden',
-                _id: new ObjectId(),
-                timeStamp: '05/05/2023, 12:50:38'
-              },
-              {
-                body: 'Hej Michael',
-                sender: 'Gram',
-                _id: new ObjectId(),
-                timeStamp: '05/05/2023, 13:34:32'
-              }
+                {
+                    body: 'hello',
+                    sender: 'Qyvaden',
+                    _id: new ObjectId(),
+                    timeStamp: '05/05/2023, 12:50:38'
+                },
+                {
+                    body: 'Hej Michael',
+                    sender: 'Gram',
+                    _id: new ObjectId(),
+                    timeStamp: '05/05/2023, 13:34:32'
+                }
             ]
-          }
+        }
     ])
 }
 
