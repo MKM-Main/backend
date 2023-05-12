@@ -29,6 +29,17 @@ io.on("connect", socket => {
             console.error(error);
         }
     });
+    socket.on("new conversation", async data => {
+        console.log(data)
+        try {
+            const newData = {
+                conversation: data
+            };
+            io.emit("new conversation", { data: newData });
+        } catch (error) {
+            console.error(error);
+        }
+    })
 });
 
 import cors from "cors"
