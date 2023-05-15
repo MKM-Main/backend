@@ -275,10 +275,8 @@ router.patch("/api/admin/users/:artistName", authenticateToken, async (req, res)
         const user = req.user
         if (req.user.artistName === artistName) {
             const findUserById = await db.users.find({_id: new ObjectId(user._id)}).toArray()
-            console.log(findUserById[0])
             res.clearCookie("jwt");
             const newToken = jwt.sign(findUserById[0], jwtSecret, {expiresIn: "10m"});
-            console.log(newToken)
             res.cookie('jwt', newToken, {httpOnly: true});
             res.status(200).send({data: findUserById[0]});
         }
