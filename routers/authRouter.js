@@ -34,7 +34,7 @@ router.post("/api/auth/signup", async (req, res) => {
             await db.users.insertOne(newUser);
 
             // Generate a JWT token with the user ID and email as payload
-            const accessToken = jwt.sign({id: newUser._id, email: newUser.email}, jwtSecret);
+            const accessToken = jwt.sign({id: newUser._id, email: newUser.email}, jwtSecret, {expiresIn: "10m"});
             // Set the JWT token in a cookie (you could also store it in localStorage or sessionStorage in the front-end)
             res.cookie('jwt', accessToken, {httpOnly: true});
             delete newUser.password
@@ -52,12 +52,12 @@ router.post("/api/auth/login", async (req, res) => {
         const hashedPassword = findUserByEmail[0].password
         if (await bcrypt.compare(user.password, hashedPassword)) {
             delete findUserByEmail[0].password
-            const accessToken = jwt.sign(findUserByEmail[0], jwtSecret);
+            const accessToken = jwt.sign(findUserByEmail[0], jwtSecret, {expiresIn: "10m"});
             res.cookie('jwt', accessToken, {httpOnly: true});
             res.status(200).send({data: "Success"})
         }
     } catch (error) {
-        res.status(401).send({message: `login failed. \nError: ${error.message}`})
+        res.status(401).send({message: `login failed. \nError: ${error.message}`}) 
     }
 })
 

@@ -14,11 +14,16 @@ const users = await db.collection("users")
 const posts = await db.collection("posts")
 const forums = await db.collection("forums")
 const conversations = await db.collection("conversations")
+const collections = await db.listCollections().toArray()
+
+
 
 
 export default {
     users,
     posts,
     forums,
-    conversations
+    conversations,
+    collections,
+    db
 }

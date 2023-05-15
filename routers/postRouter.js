@@ -32,13 +32,13 @@ router.get("/api/posts", async (req, res) => {
 router.get("/api/posts/news", authenticateToken, async (req, res) => {
     const userLoggedIn = req.user
     const dbUser = await db.users.findOne({_id: new ObjectId(userLoggedIn._id)})
-    
+
     if (dbUser !== null){
     const posts = db.posts.find({artistName: {$in: dbUser?.following}}).sort({"timeStamp": -1})
     const postArray = await posts.toArray();
-    console.log(postArray)
+    
     const filteredArray = postArray.filter(post => post.referenceName === "wallpost")
-    console.log(filteredArray)
+    
     res.status(200).send(filteredArray)
     } 
     if (dbUser === null){
@@ -213,7 +213,8 @@ router.patch("/api/report/:id", authenticateToken, async (req, res) => {
                     timeStamp: new Date().toLocaleString("en-GB"),
                     link: link,
                     reason: reason,
-                    description: description}]
+                    description: description,
+                    _id: new ObjectId()}]
                 };
               } else {
                 return comment;
@@ -233,7 +234,8 @@ router.patch("/api/report/:id", authenticateToken, async (req, res) => {
                 timeStamp: new Date().toLocaleString("en-GB"),
                 link: link,
                 reason: reason,
-                description: description
+                description: description,
+                _id: new ObjectId()
             }}}
           );
           return res.sendStatus(200);
@@ -246,7 +248,8 @@ router.patch("/api/report/:id", authenticateToken, async (req, res) => {
             timeStamp: new Date().toLocaleString("en-GB"),
             link: link,
             reason: reason,
-            description: description}}}
+            description: description,
+            _id: new ObjectId()}}}
         );
         return res.sendStatus(200);
       }
