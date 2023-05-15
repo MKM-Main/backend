@@ -35,7 +35,7 @@ io.on("connect", socket => {
             const newData = {
                 conversation: data
             };
-            io.emit("new conversation", { data: newData });
+            io.emit("new conversation", {data: newData});
         } catch (error) {
             console.error(error);
         }
@@ -93,6 +93,9 @@ app.use(adminRouter)
 
 import merchRouter from "./routers/merchRouter.js";
 app.use(merchRouter)
+
+import discographyRouter from "./routers/discographyRouter.js";
+app.use(discographyRouter)
 
 
 const PORT = process.env.PORT || 8080

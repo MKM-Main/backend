@@ -23,6 +23,7 @@ router.post("/api/auth/signup", async (req, res) => {
     newUser.followers = []
     newUser.following = []
     newUser.merch = []
+    newUser.discography = []
     newUser.profilePictureKey = "blank_profile.webp"
     const emailExist = await db.users.find({email: newUser.email}).toArray();
 
