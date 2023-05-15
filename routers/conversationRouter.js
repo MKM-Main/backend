@@ -32,7 +32,7 @@ router.get("/api/conversations", authenticateToken, async (req, res) => {
 
   const mergedConversations = conversations.map((conversation) => {
     const user = findUsers.find(u => u.artistName === conversation.participants[0]);
-    return { ...conversation, profilePictureKey: user.profilePictureKey };
+    return { ...conversation, profilePictureKey: user?.profilePictureKey };
   });
 
   res.status(200).send(mergedConversations);
