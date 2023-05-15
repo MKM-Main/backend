@@ -24,6 +24,7 @@ const insertData = async () => {
             "reported": [],
             "merch": [],
             "discography": [],
+            "userTags": [],
             "email": "malthegram22@gmail.com",
             "creationDate": new Date().toLocaleString("en-GB"),
             "password": bcrypt.hashSync("123", 10),
@@ -44,6 +45,7 @@ const insertData = async () => {
             "reported": [],
             "merch": [],
             "discography": [],
+            "userTags": [],
             "role": "admin",
             "email": "funch@kevn.dk",
             "creationDate": new Date().toLocaleString("en-GB"),
@@ -67,6 +69,7 @@ const insertData = async () => {
             "reported": [],
             "merch": [],
             "discography": [],
+            "userTags": [],
             "creationDate": new Date().toLocaleString("en-GB"),
             "password": bcrypt.hashSync("123", 10),
             "followers": [

@@ -24,6 +24,7 @@ router.post("/api/auth/signup", async (req, res) => {
     newUser.following = []
     newUser.merch = []
     newUser.discography = []
+    newUser.userTags = []
     newUser.profilePictureKey = "blank_profile.webp"
     const emailExist = await db.users.find({email: newUser.email}).toArray();
 
@@ -57,7 +58,7 @@ router.post("/api/auth/login", async (req, res) => {
             res.status(200).send({data: "Success"})
         }
     } catch (error) {
-        res.status(401).send({message: `login failed. \nError: ${error.message}`}) 
+        res.status(401).send({message: `login failed. \nError: ${error.message}`})
     }
 })
 

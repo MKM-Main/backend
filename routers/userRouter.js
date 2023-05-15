@@ -1,8 +1,8 @@
 import {Router} from "express"
 import db from "../database/database.js"
-import { ObjectId } from "mongodb";
-import { authenticateToken } from "./middelware/verifyJwt.js"
-import  jwt  from "jsonwebtoken";
+import {ObjectId} from "mongodb";
+import {authenticateToken} from "./middelware/verifyJwt.js"
+import jwt from "jsonwebtoken";
 const jwtSecret = process.env.JWT_SECRET
 const router = Router();
 
@@ -23,49 +23,48 @@ router.get("/api/users", async (req, res) => {
     }
 })
 
-router.patch("/api/users", authenticateToken, async (req, res) =>{
+router.patch("/api/users", authenticateToken, async (req, res) => {
     const id = new ObjectId(req.user._id)
     const updatedUser = req.body
-    try{
+    try {
         await db.users.updateOne({_id: id}, {$set: updatedUser})
-        const newPayLoad = { ...req.user, ...updatedUser}
+        const newPayLoad = {...req.user, ...updatedUser}
         const newToken = jwt.sign(newPayLoad, process.env.JWT_SECRET)
-        res.cookie('jwt', newToken, { httpOnly: true });
+        res.cookie('jwt', newToken, {httpOnly: true});
         res.send({message: "Succes", token: newToken})
-    }catch(error){
+    } catch (error) {
         res.status(500).send({message: "Error"})
     }
 })
 
 
-
 router.get("/api/users/:artistname", async (req, res) => {
     const artistName = req.params.artistname
-    const user = await db.users.findOne({artistName : artistName})
+    const user = await db.users.findOne({artistName: artistName})
     res.send({user: user})
 })
 
 router.patch("/api/users/follow", authenticateToken, async (req, res) => {
     //Current user
     const user = req.user
-    
+
     //Get the id from the follow button on another user
     const followingUserId = new ObjectId(req.body.userId)
 
-    const followingUserData = await db.users.findOne({_id : followingUserId})
-    
+    const followingUserData = await db.users.findOne({_id: followingUserId})
+
     //Following
     await db.users.updateOne(
-        { _id: new ObjectId(user._id) },
-        { $addToSet: { following: followingUserData.artistName } }
+        {_id: new ObjectId(user._id)},
+        {$addToSet: {following: followingUserData.artistName}}
     )
 
     // Followers
     await db.users.updateOne(
-        { _id: followingUserId },
-        { $addToSet: { followers: user.artistName } }
+        {_id: followingUserId},
+        {$addToSet: {followers: user.artistName}}
     )
-    res.send({ message: "User followed successfully" })
+    res.send({message: "User followed successfully"})
 })
 
 router.patch("/api/users/unfollow", authenticateToken, async (req, res) => {
@@ -74,35 +73,35 @@ router.patch("/api/users/unfollow", authenticateToken, async (req, res) => {
 
     const unfollowUserId = new ObjectId(req.body.userId)
 
-    const followinUserData = await db.users.findOne({_id : unfollowUserId})
+    const followinUserData = await db.users.findOne({_id: unfollowUserId})
     // Remove the unfollowUserId from the userId's following list
     await db.users.updateOne(
-        { _id: new ObjectId(user._id) },
-        { $pull: { following: followinUserData.artistName } }
+        {_id: new ObjectId(user._id)},
+        {$pull: {following: followinUserData.artistName}}
     )
 
     // Remove the userId from the unfollowUserId's followers list
     await db.users.updateOne(
-        { _id: unfollowUserId },
-        { $pull: { followers: user.artistName } }
+        {_id: unfollowUserId},
+        {$pull: {followers: user.artistName}}
     )
 
-    res.send({ message: "User unfollowed successfully" })
+    res.send({message: "User unfollowed successfully"})
 })
 
 //Finds the following or follower on artistname
 router.get("/api/users/:state/:artistname", async (req, res) => {
     const state = req.params.state
     const artistName = req.params.artistname
-    const artist = await db.users.findOne({artistName : artistName})
+    const artist = await db.users.findOne({artistName: artistName})
 
-    if(state === "following"){
-        const followingUsers = db.users.find({artistName: {$in : artist.following}})
+    if (state === "following") {
+        const followingUsers = db.users.find({artistName: {$in: artist.following}})
         const userArray = await followingUsers.toArray();
 
         res.status(200).send(userArray)
-    }else{
-        const followersUsers = db.users.find({artistName: {$in : artist.followers}})
+    } else {
+        const followersUsers = db.users.find({artistName: {$in: artist?.followers}})
         const userArray = await followersUsers.toArray();
 
         res.status(200).send(userArray)
