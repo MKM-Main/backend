@@ -31,8 +31,9 @@ io.on("connect", socket => {
     });
     socket.on('new conversation', async (data) => {
         try {
-          const [conversationData, socketId] = data;
-          io.emit('new conversation', { conversation: conversationData, socketId });
+            const user = data[0].receiver[0];
+          const conversationData = data;
+          io.emit('new conversation', { conversation: conversationData, user: user});
         } catch (error) {
           console.error(error);
         }

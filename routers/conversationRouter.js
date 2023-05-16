@@ -43,19 +43,21 @@ router.post("/api/conversations/:receiver", authenticateToken, async (req, res) 
     const user = req.user;
     const sender = user.artistName;
     const receiver = req.params.receiver;
-    const conversation = req.body;
-    conversation.participants = [sender, receiver];
-    conversation.messages = [];
-    conversation.timeStamp = new Date().toLocaleString("en-GB");
-    conversation.read = false;
-    conversation.sender = sender;
+    const timeStamp = new Date().toLocaleString("en-GB");
     const existingConversation = await db.conversations.findOne({participants: {$all: [sender, receiver]}});
     if(existingConversation){
       res.send({message: "Conversation already exist"})
     }else{
+      const conversation = req.body;
+      conversation.participants = [sender, receiver];
+      conversation.messages = [{_id: new ObjectId(), timeStamp: timeStamp, body: `Hello this is a new conversation created at ${timeStamp}`}];
+      conversation.timeStamp = timeStamp;
+      conversation.read = false;
+      conversation.sender = sender;
       const insertConversation = await db.conversations.insertOne(conversation);
       const getImgReceiver = await db.users.findOne({artistName: receiver})
       const getImgSender = await db.users.findOne({artistName: sender})
+      
       res.status(200).send([{receiver: [receiver], sender: [sender], _id: insertConversation.insertedId, profilePictureKeyReceiver: getImgReceiver.profilePictureKey, profilePictureKeySender: getImgSender.profilePictureKey , timeStamp: conversation.timeStamp}]);
     }
 })
