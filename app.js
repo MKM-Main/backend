@@ -92,6 +92,9 @@ app.use(adminRouter)
 import merchRouter from "./routers/merchRouter.js";
 app.use(merchRouter)
 
+import discographyRouter from "./routers/discographyRouter.js";
+app.use(discographyRouter)
+
 
 const PORT = process.env.PORT || 8080
 server.listen(PORT, () => {

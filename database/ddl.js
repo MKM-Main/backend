@@ -5,7 +5,7 @@ import bcrypt from "bcrypt"
 const hashedPassword = await bcrypt.hash("123", 10)
 
 const cleanDatabase = async () => {
-    const deleteAction = true
+    const deleteAction = false
     if (deleteAction) {
         await db.users.drop()
         await db.forums.drop()
@@ -23,6 +23,8 @@ const insertData = async () => {
             "role": "admin",
             "reported": [],
             "merch": [],
+            "discography": [],
+            "userTags": [],
             "email": "malthegram22@gmail.com",
             "creationDate": new Date().toLocaleString("en-GB"),
             "password": bcrypt.hashSync("123", 10),
@@ -42,6 +44,8 @@ const insertData = async () => {
             "artistName": "Funch",
             "reported": [],
             "merch": [],
+            "discography": [],
+            "userTags": [],
             "role": "admin",
             "email": "funch@kevn.dk",
             "creationDate": new Date().toLocaleString("en-GB"),
@@ -64,6 +68,8 @@ const insertData = async () => {
             "role": "user",
             "reported": [],
             "merch": [],
+            "discography": [],
+            "userTags": [],
             "creationDate": new Date().toLocaleString("en-GB"),
             "password": bcrypt.hashSync("123", 10),
             "followers": [

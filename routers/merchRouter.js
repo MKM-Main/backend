@@ -39,7 +39,7 @@ router.post("/api/users/:artistName/merch", authenticateToken, async (req, res) 
     if (file) {
         await s3.putObject({
             Bucket: "mkm-mcb",
-            Key: `${artist}/${merch._id}`,
+            Key: `${artist}/merch/${merch._id}`,
             Body: file?.data,
             ContentType: file?.mimetype
         }).promise()
@@ -62,10 +62,10 @@ router.post("/api/users/:artistName/merch", authenticateToken, async (req, res) 
 router.delete("/api/users/:artistName/merch/:merchId", authenticateToken, async (req, res) => {
     const artist = req.params.artistName
     const merchId = new ObjectId(req.params.merchId)
-    
+
     await s3.deleteObject({
         Bucket: "mkm-mcb",
-        Key: `${artist}/${merchId}`
+        Key: `${artist}/merch/${merchId}`
     }).promise()
 
     try {
