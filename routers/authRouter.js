@@ -53,7 +53,7 @@ router.post("/api/auth/login", async (req, res) => {
         const hashedPassword = findUserByEmail[0].password
         if (await bcrypt.compare(user.password, hashedPassword)) {
             delete findUserByEmail[0].password
-            const accessToken = jwt.sign(findUserByEmail[0], jwtSecret, {expiresIn: "10m"});
+            const accessToken = jwt.sign(findUserByEmail[0], jwtSecret, {expiresIn: "120m"});
             res.cookie('jwt', accessToken, {httpOnly: true});
             res.status(200).send({data: "Success"})
         }

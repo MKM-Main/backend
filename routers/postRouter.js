@@ -26,24 +26,22 @@ router.get("/api/posts", async (req, res) => {
 })
 
 
-
-
 //News page
 router.get("/api/posts/news", authenticateToken, async (req, res) => {
     const userLoggedIn = req.user
     const dbUser = await db.users.findOne({_id: new ObjectId(userLoggedIn._id)})
 
-    if (dbUser !== null){
-    const posts = db.posts.find({artistName: {$in: dbUser?.following}}).sort({"timeStamp": -1})
-    const postArray = await posts.toArray();
-    
-    const filteredArray = postArray.filter(post => post.referenceName === "wallpost")
-    
-    res.status(200).send(filteredArray)
-    } 
-    if (dbUser === null){
+    if (dbUser !== null) {
+        const posts = db.posts.find({artistName: {$in: dbUser?.following}}).sort({"timeStamp": -1})
+        const postArray = await posts.toArray();
+
+        const filteredArray = postArray.filter(post => post.referenceName === "wallpost")
+
+        res.status(200).send(filteredArray)
+    }
+    if (dbUser === null) {
         res.status(200).send({message: "no posts"})
-    } else{
+    } else {
         res.status(500).send()
     }
 });
@@ -66,7 +64,7 @@ router.get("/api/posts/hyped", async (req, res) => {
     const postEligibleForHype = await db.posts.find({
         $expr: {$gte: [{$size: "$rating"}, 2]}
     }).toArray()
-    
+
 
     res.status(200).send(postEligibleForHype)
 })
@@ -86,12 +84,13 @@ router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
     post.comments = []
     post.timeStamp = new Date().toLocaleString("en-GB");
 
+
     if (fileType) {
         post.keyReference = fileType?.name
         await s3.putObject({
             Body: fileType?.data,
             Bucket: "mkm-mcb",
-            Key: fileType?.name,
+            Key: `${user.artistName}/posts/${fileType?.name}`,
             ContentType: fileType?.mimetype
         }).promise()
     }
@@ -161,7 +160,7 @@ router.patch("/api/posts/comments/:reference/:search", authenticateToken, async 
         res.status(200).send({message: comment});
     } else {
         const postTitle = req.params.search
-        const updateCommentArray = await db.posts.updateOne({postTitle: postTitle}, {$push: {comments: comment}})
+        const updateCommentArray = await db.posts.updateOne({_id: postTitle}, {$push: {comments: comment}})
         res.status(200).send(comment)
     }
 });
@@ -186,78 +185,88 @@ router.patch("/api/posts/:postid", authenticateToken, async (req, res) => {
 
 router.patch("/api/report/:id", authenticateToken, async (req, res) => {
     try {
-      const posts = await db.posts.find().toArray();
-      const collection = req.body.collection;
-      const link = req.body.link;
-      const description = req.body.description;
-      const reason = req.body.reason;
-      const id = new ObjectId(req.params.id);
-      const postId = new ObjectId(req.body.postId);
-      const loggedInUser = req.user.artistName;
-    
-      if (collection === "posts") {
-        if (req.body.postId) {
-          const postToUpdate = posts.find((post) => post._id.equals(postId));
-          if (!postToUpdate) {
-            return res.status(404).send("Post not found");
-          }
-  
-          const { comments } = postToUpdate;
-          const updatedComments = await Promise.all(
-            comments.map(async (comment) => {
-              if (comment._id.equals(id)) {
-                return {
-                  ...comment,
-                  reported: [...comment.reported, {
-                    userWhoReported: loggedInUser,
-                    timeStamp: new Date().toLocaleString("en-GB"),
-                    link: link,
-                    reason: reason,
-                    description: description,
-                    _id: new ObjectId()}]
-                };
-              } else {
-                return comment;
-              }
-            })
-          );
-          const reportPost = await db.posts.updateOne(
-            { _id: postId },
-            { $set: { comments: updatedComments } }
-          );
-          return res.sendStatus(200);
+        const posts = await db.posts.find().toArray();
+        const collection = req.body.collection;
+        const link = req.body.link;
+        const description = req.body.description;
+        const reason = req.body.reason;
+        const id = new ObjectId(req.params.id);
+        const postId = new ObjectId(req.body.postId);
+        const loggedInUser = req.user.artistName;
+
+        if (collection === "posts") {
+            if (req.body.postId) {
+                const postToUpdate = posts.find((post) => post._id.equals(postId));
+                if (!postToUpdate) {
+                    return res.status(404).send("Post not found");
+                }
+
+                const {comments} = postToUpdate;
+                const updatedComments = await Promise.all(
+                    comments.map(async (comment) => {
+                        if (comment._id.equals(id)) {
+                            return {
+                                ...comment,
+                                reported: [...comment.reported, {
+                                    userWhoReported: loggedInUser,
+                                    timeStamp: new Date().toLocaleString("en-GB"),
+                                    link: link,
+                                    reason: reason,
+                                    description: description,
+                                    _id: new ObjectId()
+                                }]
+                            };
+                        } else {
+                            return comment;
+                        }
+                    })
+                );
+                const reportPost = await db.posts.updateOne(
+                    {_id: postId},
+                    {$set: {comments: updatedComments}}
+                );
+                return res.sendStatus(200);
+            } else {
+                const reportPost = await db.posts.updateOne(
+                    {_id: id},
+                    {
+                        $push: {
+                            reported: {
+                                userWhoReported: loggedInUser,
+                                timeStamp: new Date().toLocaleString("en-GB"),
+                                link: link,
+                                reason: reason,
+                                description: description,
+                                _id: new ObjectId()
+                            }
+                        }
+                    }
+                );
+                return res.sendStatus(200);
+            }
         } else {
-          const reportPost = await db.posts.updateOne(
-            { _id: id },
-            { $push: { reported: {
-                userWhoReported: loggedInUser,
-                timeStamp: new Date().toLocaleString("en-GB"),
-                link: link,
-                reason: reason,
-                description: description,
-                _id: new ObjectId()
-            }}}
-          );
-          return res.sendStatus(200);
+            const reportUser = await db[collection].updateOne(
+                {_id: id},
+                {
+                    $push: {
+                        reported: {
+                            userWhoReported: loggedInUser,
+                            timeStamp: new Date().toLocaleString("en-GB"),
+                            link: link,
+                            reason: reason,
+                            description: description,
+                            _id: new ObjectId()
+                        }
+                    }
+                }
+            );
+            return res.sendStatus(200);
         }
-      } else {
-        const reportUser = await db[collection].updateOne(
-          { _id: id },
-          { $push: { reported: {
-            userWhoReported: loggedInUser, 
-            timeStamp: new Date().toLocaleString("en-GB"),
-            link: link,
-            reason: reason,
-            description: description,
-            _id: new ObjectId()}}}
-        );
-        return res.sendStatus(200);
-      }
     } catch (err) {
-      console.error(err);
-      return res.status(500).send("Internal server error");
+        console.error(err);
+        return res.status(500).send("Internal server error");
     }
-  });
+});
 
 router.delete("/api/posts/comments/:postid/:commentid", async (req, res) => {
     try {
