@@ -159,8 +159,8 @@ router.patch("/api/posts/comments/:reference/:search", authenticateToken, async 
         );
         res.status(200).send({message: comment});
     } else {
-        const postTitle = req.params.search
-        const updateCommentArray = await db.posts.updateOne({_id: postTitle}, {$push: {comments: comment}})
+        const postId = new ObjectId(req.params.search)
+        const updateCommentArray = await db.posts.updateOne({_id: postId}, {$push: {comments: comment}})
         res.status(200).send(comment)
     }
 });
