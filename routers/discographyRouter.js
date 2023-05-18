@@ -15,8 +15,8 @@ const s3 = new AWS.S3({
 )
 
 
-router.post("/api/users/:artistName/discography", authenticateToken, async (req, res) => {
-    const artistName = req.params.artistName
+router.post("/api/users/:artistId/discography", authenticateToken, async (req, res) => {
+    const artistId = new ObjectId(req.params.artistId)
     const discographyItem = req.body
     const file = req.files?.file
     discographyItem._id = new ObjectId()
@@ -29,21 +29,17 @@ router.post("/api/users/:artistName/discography", authenticateToken, async (req,
     discographyItem.album = JSON.parse(discographyItem.album)
     discographyItem.isNewRelease = JSON.parse(discographyItem.isNewRelease)
 
-
-    console.log(discographyItem)
-
     if (file) {
-        discographyItem.referenceKey = file.md5
         await s3.putObject({
             Bucket: "mkm-mcb",
-            Key: `${artistName}/discography/${discographyItem.referenceKey}`,
+            Key: `${artistId}/discography/${discographyItem._id}`,
             Body: file?.data,
             ContentType: file?.mimeType
         }).promise()
     }
 
     try {
-        await db.users.updateOne({artistName: artistName}, {
+        await db.users.updateOne({_id: artistId}, {
             $push: {
                 "discography": discographyItem
             }
@@ -56,18 +52,18 @@ router.post("/api/users/:artistName/discography", authenticateToken, async (req,
 
 })
 
-router.delete("/api/users/:artistName/discography/:discoId", authenticateToken, async (req, res) => {
-    const artist = req.params.artistName
+router.delete("/api/users/:artistId/discography/:discoId", authenticateToken, async (req, res) => {
+    const artistId = new ObjectId(req.params.artistId)
     const discoId = new ObjectId(req.params.discoId)
 
     await s3.deleteObject({
         Bucket: "mkm-mcb",
-        Key: `${artist}/discography/${discoId}`
+        Key: `${artistId}/discography/${discoId}`
     }).promise()
 
     try {
         await db.users.updateOne(
-            {artistName: artist},
+            {_id: artistId},
             {$pull: {discography: {_id: discoId}}}
         )
         res.status(200).send({message: "Success"})
