@@ -3,9 +3,19 @@ import db from "../database/database.js"
 import {ObjectId} from "mongodb"
 import {authenticateToken} from "./middelware/verifyJwt.js"
 import jwt from "jsonwebtoken";
+import AWS from "aws-sdk";
 const jwtSecret = process.env.JWT_SECRET
 
 const router = Router()
+
+const accessKeyId = process.env.AWS_S3_ACCESKEY
+const secretAccessKeyId = process.env.AWS_S3_SECRETACCESSKEY
+const s3 = new AWS.S3({
+        accessKeyId: accessKeyId,
+        secretAccessKey: secretAccessKeyId
+    }
+);
+
 
 router.get('/api/admin', authenticateToken, async (req, res) => {
     const userRole = req.user.role
@@ -73,6 +83,42 @@ router.get('/api/admin', authenticateToken, async (req, res) => {
 //     res.status(500).send("Internal server error.");
 //   }
 // });
+
+router.patch("/api/admin/users/:artistId/profile-picture", authenticateToken, async (req, res) => {
+    const artistId = new ObjectId(req.params.artistId);
+    const file = req.files.profilePicture;
+
+    try {
+        if (file) {
+            // Clear profile folder on AWS S3
+            await s3.listObjectsV2({Bucket: "mkm-mcb", Prefix: `${artistId}/profile/`})
+                .promise()
+                .then(async (data) => {
+                    const objects = data.Contents;
+                    if (objects.length > 0) {
+                        const keys = objects.map(obj => ({Key: obj.Key}))
+                        await s3.deleteObjects({Bucket: "mkm-mcb", Delete: {Objects: keys}}).promise()
+                    }
+                }).then(async () => {
+                    await s3.putObject({
+                        Bucket: "mkm-mcb",
+                        Key: `${artistId}/profile/${file?.md5}`,
+                        Body: file?.data,
+                        ContentType: file?.mimetype
+                    }).promise();
+                })
+        }
+
+        await db.users.updateOne(
+            {_id: artistId},
+            {$set: {profilePictureKey: file?.md5}}
+        )
+
+    } catch (error) {
+        res.status(500).send({error: error.message});
+    }
+});
+
 
 router.patch("/api/admin/users/:artistName", authenticateToken, async (req, res) => {
     try {

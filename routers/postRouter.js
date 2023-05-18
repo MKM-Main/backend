@@ -79,6 +79,7 @@ router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
     post.tags = JSON.parse(req.body.tags)
 
     post.artistName = user.artistName
+    post.artistId = user._id
     post.referenceName = reference
     post.rating = []
     post.comments = []
@@ -86,11 +87,11 @@ router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
 
 
     if (fileType) {
-        post.keyReference = fileType?.name
+        post.keyReference = `${fileType?.md5}.${fileType?.mimetype.split("/")[1]}`
         await s3.putObject({
             Body: fileType?.data,
             Bucket: "mkm-mcb",
-            Key: `${user.artistName}/posts/${fileType?.name}`,
+            Key: `${user._id}/posts/${fileType?.md5}.${fileType?.mimetype.split("/")[1]}`,
             ContentType: fileType?.mimetype
         }).promise()
     }
@@ -284,16 +285,47 @@ router.delete("/api/posts/:postid", authenticateToken, async (req, res) => {
     const postId = new ObjectId(req.params.postid)
 
     try {
-        const postData = await db.posts.find({_id: postId}).project({keyReference: 1, _id: 0}).toArray()
+        const result = await db.posts.aggregate([
+            {
+                $match: {
+                    _id: postId
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "artistName",
+                    foreignField: "artistName",
+                    as: "userData"
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    keyReference: 1,
+                    userId: {
+                        $toString: {
+                            $arrayElemAt: ["$userData._id", 0]
+                        }
+                    }
+                }
+            }
+        ]).toArray();
+
+        const postData = result[0];
+        const userId = postData.userId;
+        const keyReference = postData.keyReference;
+
 
         await db.posts.deleteOne({_id: postId})
 
-        if (postData[0].keyReference) {
+        if (keyReference) {
             await s3.deleteObject({
                 Bucket: "mkm-mcb",
-                Key: postData[0].keyReference
+                Key: `${userId}/posts/${keyReference}` //postData[0].keyReference
             }).promise()
         }
+
 
         res.status(200).send({data: "deleted post"})
     } catch (error) {

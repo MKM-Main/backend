@@ -5,7 +5,7 @@ import bcrypt from "bcrypt"
 const hashedPassword = await bcrypt.hash("123", 10)
 
 const cleanDatabase = async () => {
-    const deleteAction = false
+    const deleteAction = true
     if (deleteAction) {
         await db.users.drop()
         await db.forums.drop()
@@ -36,7 +36,7 @@ const insertData = async () => {
                 "Qyvaden",
                 "Funch"
             ],
-            "profilePictureKey": "pp1.jpeg"
+            "profilePictureKey": "blank_profile.webp"
         },
         {
             "firstName": "Kevin",
@@ -58,7 +58,7 @@ const insertData = async () => {
                 "Qyvaden",
                 "Gram"
             ],
-            "profilePictureKey": "pp1.jpeg"
+            "profilePictureKey": "blank_profile.webp"
         },
         {
             "firstName": "Michael",
@@ -80,7 +80,7 @@ const insertData = async () => {
                 "Gram",
                 "Funch"
             ],
-            "profilePictureKey": "pp2.jpeg"
+            "profilePictureKey": "blank_profile.webp"
         }])
 
     await db.posts.insertMany([

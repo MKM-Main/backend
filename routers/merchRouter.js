@@ -28,28 +28,26 @@ router.get(`/api/users/:artistName/merch`, async (req, res) => {
     }
 })
 
-router.post("/api/users/:artistName/merch", authenticateToken, async (req, res) => {
-    const artist = req.params.artistName
+router.post("/api/users/:artistId/merch", authenticateToken, async (req, res) => {
+    const artistId = new ObjectId(req.params.artistId)
     const merch = req.body
     merch.sizes = JSON.parse(merch.sizes);
     merch._id = new ObjectId()
     const file = req.files?.file
 
-
     if (file) {
         await s3.putObject({
             Bucket: "mkm-mcb",
-            Key: `${artist}/merch/${merch._id}`,
+            Key: `${artistId}/merch/${merch._id}`,
             Body: file?.data,
             ContentType: file?.mimetype
         }).promise()
     }
 
     try {
-
-        await db.users.updateOne({artistName: artist}, {
+        await db.users.updateOne({_id: artistId}, {
             $push: {
-                "merch": req.body
+                "merch": merch
             }
         })
         res.status(200).send({data: merch})
@@ -59,18 +57,18 @@ router.post("/api/users/:artistName/merch", authenticateToken, async (req, res) 
 })
 
 
-router.delete("/api/users/:artistName/merch/:merchId", authenticateToken, async (req, res) => {
-    const artist = req.params.artistName
+router.delete("/api/users/:artistId/merch/:merchId", authenticateToken, async (req, res) => {
+    const artistId = new ObjectId(req.params.artistId)
     const merchId = new ObjectId(req.params.merchId)
 
     await s3.deleteObject({
         Bucket: "mkm-mcb",
-        Key: `${artist}/merch/${merchId}`
+        Key: `${artistId}/merch/${merchId}`
     }).promise()
 
     try {
         await db.users.updateOne(
-            {artistName: artist},
+            {_id: artistId},
             {$pull: {merch: {_id: merchId}}}
         )
         res.status(200).send({message: "Success"})
