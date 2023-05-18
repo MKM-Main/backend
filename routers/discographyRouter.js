@@ -25,8 +25,12 @@ router.post("/api/users/:artistName/discography", authenticateToken, async (req,
         song._id = new ObjectId()
 
     })
-    discographyItem.album = discographyItem.album = "true" ? true : false
+    discographyItem.releaseDate = discographyItem.releaseDate.split("-").reverse().join("-")
+    discographyItem.album = JSON.parse(discographyItem.album)
+    discographyItem.isNewRelease = JSON.parse(discographyItem.isNewRelease)
 
+
+    console.log(discographyItem)
 
     if (file) {
         discographyItem.referenceKey = file.md5
