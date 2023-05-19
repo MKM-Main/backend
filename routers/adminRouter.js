@@ -86,7 +86,7 @@ router.get('/api/admin', authenticateToken, async (req, res) => {
 
 router.patch("/api/admin/users/:artistId/profile-picture", authenticateToken, async (req, res) => {
     const artistId = new ObjectId(req.params.artistId);
-    const file = req.files.profilePicture;
+    const file = req?.files?.profilePicture;
 
     try {
         if (file) {
