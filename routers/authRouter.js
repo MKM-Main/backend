@@ -33,12 +33,12 @@ router.post("/api/auth/signup", async (req, res) => {
     } else {
         try {
             await db.users.insertOne(newUser);
-
+            
+            delete newUser.password
             // Generate a JWT token with the user ID and email as payload
-            const accessToken = jwt.sign({id: newUser._id, email: newUser.email}, jwtSecret, {expiresIn: "10m"});
+            const accessToken = jwt.sign(newUser, jwtSecret, {expiresIn: "10m"});
             // Set the JWT token in a cookie (you could also store it in localStorage or sessionStorage in the front-end)
             res.cookie('jwt', accessToken, {httpOnly: true});
-            delete newUser.password
             res.status(200).send({data: "Success"});
         } catch (error) {
             console.log(`Error: ${error.message}`);
