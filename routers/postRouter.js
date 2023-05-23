@@ -14,10 +14,18 @@ const s3 = new AWS.S3({
 );
 
 let tags = [
-    {name: "metal", checked: false},
-    {name: "rap", checked: false},
-    {name: "pop", checked: false}
-]
+    {name: "pop", checked: false},
+    {name: "hip-hop/rap", checked: false},
+    {name: "rock", checked: false},
+    {name: "electronic/dance", checked: false},
+    {name: "r&b/soul", checked: false},
+    {name: "country", checked: false},
+    {name: "latin", checked: false},
+    {name: "k-pop", checked: false},
+    {name: "reggaeton", checked: false},
+    {name: "alternative/indie", checked: false}
+];
+
 
 //get all posts
 router.get("/api/posts", async (req, res) => {
@@ -160,7 +168,7 @@ router.patch("/api/posts/comments/:reference/:search", authenticateToken, async 
 
     if (req.params.reference === "wallposts") {
         const id = req.params.search
-        const result = await db.posts.updateOne({_id: new ObjectId(id)},{$push: {comments: comment}});
+        const result = await db.posts.updateOne({_id: new ObjectId(id)}, {$push: {comments: comment}});
         res.status(200).send({message: comment});
     } else {
         const postId = new ObjectId(req.params.search)
