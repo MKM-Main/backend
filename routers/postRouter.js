@@ -77,14 +77,16 @@ router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
     const reference = req.params.reference
     const post = req.body
     post.tags = JSON.parse(req.body.tags)
+    const findUser = await db.users.findOne({artistName: user.artistName})
 
     post.artistName = user.artistName
     post.artistId = user._id
+    post.profilePictureKey = findUser.profilePictureKey;
     post.referenceName = reference
     post.rating = []
     post.comments = []
     post.timeStamp = new Date().toLocaleString("en-GB");
-    post._id = new ObjectId()
+    post._id = new ObjectId();
 
 
     if (fileType) {
@@ -145,20 +147,20 @@ router.patch("/api/posts/comments/:commentId", authenticateToken, async (req, re
 })
 
 router.patch("/api/posts/comments/:reference/:search", authenticateToken, async (req, res) => {
-    const userLoggedIn = req.user.artistName;
+    const user = req.user;
     const comment = req.body;
-    comment.commentAuthor = userLoggedIn;
+    const findUser = await db.users.findOne({artistName: user.artistName})
+    comment.commentAuthor = user.artistName;
     comment._id = new ObjectId();
     comment.rating = [];
     comment.reported = []
     comment.timeStamp = new Date().toLocaleString("en-GB");
+    comment.artistId = user._id;
+    comment.profilePictureKey = findUser.profilePictureKey;
 
     if (req.params.reference === "wallposts") {
         const id = req.params.search
-        const result = await db.posts.updateOne(
-            {_id: new ObjectId(id)},
-            {$push: {comments: comment}}
-        );
+        const result = await db.posts.updateOne({_id: new ObjectId(id)},{$push: {comments: comment}});
         res.status(200).send({message: comment});
     } else {
         const postId = new ObjectId(req.params.search)
