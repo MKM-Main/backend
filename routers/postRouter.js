@@ -35,34 +35,75 @@ router.get("/api/posts", async (req, res) => {
 
 
 //News page
+
 router.get("/api/posts/news", authenticateToken, async (req, res) => {
-    const userLoggedIn = req.user
-    const dbUser = await db.users.findOne({_id: new ObjectId(userLoggedIn._id)})
-
+    const userLoggedIn = req.user;
+    const dbUser = await db.users.findOne({ _id: new ObjectId(userLoggedIn._id) });
+  
     if (dbUser !== null) {
-        const posts = db.posts.find({artistName: {$in: dbUser?.following}}).sort({"timeStamp": -1})
-        const postArray = await posts.toArray();
-
-        const filteredArray = postArray.filter(post => post.referenceName === "wallpost")
-
-        res.status(200).send(filteredArray)
+      const posts = db.posts.find({ artistName: { $in: dbUser?.following } }).sort({ "timeStamp": -1 });
+      const postArray = await posts.toArray();
+      let filteredArray = postArray.filter(post => post.referenceName === "wallpost");
+  
+      const parseDateString = (dateString) => {
+        const [datePart, timePart] = dateString.split(", ");
+        const [day, month, year] = datePart.split("/");
+        const [hours, minutes, seconds] = timePart.split(":");
+  
+        // Note: The month value is zero-based in JavaScript's Date object,
+        // so we subtract 1 from the parsed month value
+        return new Date(year, month - 1, day, hours, minutes, seconds);
+      };
+  
+      filteredArray.forEach((post) => {
+        const sortedComments = [...post.comments];
+        sortedComments.sort((a, b) => {
+          const dateA = parseDateString(a.timeStamp);
+          const dateB = parseDateString(b.timeStamp);
+          return dateB - dateA;
+        });
+        post.comments = sortedComments;
+      });
+  
+      res.status(200).send(filteredArray);
     }
+  
     if (dbUser === null) {
-        res.status(200).send({message: "no posts"})
+      res.status(200).send({ message: "no posts" });
     } else {
-        res.status(500).send()
+      res.status(500).send();
     }
-});
+  });
 
 //Posts on own profile
 router.get("/api/posts/wallposts/:artistName", async (req, res) => {
     const artistName = req.params.artistName;
-
-    const wallPosts = await db.posts.find({referenceName: "wallpost", artistName: artistName});
+  
+    const wallPosts = await db.posts.find({ referenceName: "wallpost", artistName: artistName }).sort({ "timeStamp": -1 });
     const postArray = await wallPosts.toArray();
-
-    res.status(200).send(postArray)
-})
+  
+    const parseDateString = (dateString) => {
+      const [datePart, timePart] = dateString.split(", ");
+      const [day, month, year] = datePart.split("/");
+      const [hours, minutes, seconds] = timePart.split(":");
+  
+      // Note: The month value is zero-based in JavaScript's Date object,
+      // so we subtract 1 from the parsed month value
+      return new Date(year, month - 1, day, hours, minutes, seconds);
+    };
+  
+    postArray.forEach((post) => {
+      const sortedComments = [...post.comments];
+      sortedComments.sort((a, b) => {
+        const dateA = parseDateString(a.timeStamp);
+        const dateB = parseDateString(b.timeStamp);
+        return dateB - dateA;
+      });
+      post.comments = sortedComments;
+    });
+  
+    res.status(200).send(postArray);
+  });
 
 router.get("/api/posts/tags", (req, res) => {
     res.status(200).send({tags})
