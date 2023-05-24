@@ -52,7 +52,7 @@ router.get("/api/posts/news", authenticateToken, async (req, res) => {
   
         // Note: The month value is zero-based in JavaScript's Date object,
         // so we subtract 1 from the parsed month value
-        return new Date(year, month - 1, day, hours, minutes, seconds);
+        return new Date(year, month - 1, day, hours, minutes, seconds); 
       };
   
       filteredArray.forEach((post) => {
