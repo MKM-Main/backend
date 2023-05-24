@@ -39,7 +39,7 @@ router.get('/forum/post/:postTitle', async (req, res) => {
       };
 
     // Create a copy of the comments array and sort it in descending order
-    const sortedComments = [...post.comments];
+    const sortedComments = [...post?.comments]; 
     sortedComments.sort((a, b) => {
       const dateA = parseDateString(a.timeStamp);
       const dateB = parseDateString(b.timeStamp);
