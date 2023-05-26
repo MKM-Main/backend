@@ -85,13 +85,14 @@ router.get('/api/admin', authenticateToken, async (req, res) => {
 // });
 
 router.patch("/api/admin/users/:artistId/profile-picture", authenticateToken, async (req, res) => {
-    const artistId = new ObjectId(req.params.artistId);
-    const file = req?.files?.profilePicture;
+    const artistIdString = req.params.artistId
+    const artistIdAsObject = new ObjectId(req.params.artistId)
+    const file = req?.files?.profilePicture
 
     try {
         if (file) {
             // Clear profile folder on AWS S3
-            await s3.listObjectsV2({Bucket: "mkm-mcb", Prefix: `${artistId}/profile/`})
+            await s3.listObjectsV2({Bucket: "mkm-mcb", Prefix: `${artistIdAsObject}/profile/`})
                 .promise()
                 .then(async (data) => {
                     const objects = data.Contents;
@@ -102,21 +103,43 @@ router.patch("/api/admin/users/:artistId/profile-picture", authenticateToken, as
                 }).then(async () => {
                     await s3.putObject({
                         Bucket: "mkm-mcb",
-                        Key: `${artistId}/profile/${file?.md5}`,
+                        Key: `${artistIdAsObject}/profile/${file?.md5}`,
                         Body: file?.data,
                         ContentType: file?.mimetype
                     }).promise();
                 })
         }
-
         await db.users.updateOne(
-            {_id: artistId},
+            {_id: artistIdAsObject},
             {$set: {profilePictureKey: file?.md5}}
-        )
+        ).then(async () => {
+            await db.posts.updateMany(
+                {
+                    $or: [
+                        {"comments.artistId": artistIdString},
+                        {artistId: artistIdString}
+                    ]
+                },
+                {
+                    $set: {
+                        "profilePictureKey": file.md5,
+                        "comments.$[comment].profilePictureKey": file.md5
+                    }
+                },
+                {
+                    arrayFilters: [
+                        {"comment.artistId": artistIdString}
+                    ]
+                }
+            )
+        })
+
 
     } catch (error) {
         res.status(500).send({error: error.message});
     }
+
+
 });
 
 
