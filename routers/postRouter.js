@@ -29,9 +29,13 @@ let tags = [
 
 //get all posts
 router.get("/api/posts", async (req, res) => {
-    const posts = await db.posts.find().toArray()
-    res.send(posts)
-})
+    try {
+      const posts = await db.posts.find().toArray();
+      res.send(posts);
+    } catch (error) {
+      res.status(500).send('Internal Server Error');
+    }
+  });
 
 
 //News page
@@ -77,46 +81,57 @@ router.get("/api/posts/news", authenticateToken, async (req, res) => {
 
 //Posts on own profile
 router.get("/api/posts/wallposts/:artistName", async (req, res) => {
-    const artistName = req.params.artistName;
+    try {
+      const artistName = req.params.artistName;
   
-    const wallPosts = await db.posts.find({ referenceName: "wallpost", artistName: artistName }).sort({ "timeStamp": -1 });
-    const postArray = await wallPosts.toArray();
+      const wallPosts = await db.posts.find({ referenceName: "wallpost", artistName: artistName }).sort({ "timeStamp": -1 });
+      const postArray = await wallPosts.toArray();
   
-    const parseDateString = (dateString) => {
-      const [datePart, timePart] = dateString.split(", ");
-      const [day, month, year] = datePart.split("/");
-      const [hours, minutes, seconds] = timePart.split(":");
+      const parseDateString = (dateString) => {
+        const [datePart, timePart] = dateString.split(", ");
+        const [day, month, year] = datePart.split("/");
+        const [hours, minutes, seconds] = timePart.split(":");
   
-      // Note: The month value is zero-based in JavaScript's Date object,
-      // so we subtract 1 from the parsed month value
-      return new Date(year, month - 1, day, hours, minutes, seconds);
-    };
+        // Note: The month value is zero-based in JavaScript's Date object,
+        // so we subtract 1 from the parsed month value
+        return new Date(year, month - 1, day, hours, minutes, seconds);
+      };
   
-    postArray.forEach((post) => {
-      const sortedComments = [...post.comments];
-      sortedComments.sort((a, b) => {
-        const dateA = parseDateString(a.timeStamp);
-        const dateB = parseDateString(b.timeStamp);
-        return dateB - dateA;
+      postArray.forEach((post) => {
+        const sortedComments = [...post.comments];
+        sortedComments.sort((a, b) => {
+          const dateA = parseDateString(a.timeStamp);
+          const dateB = parseDateString(b.timeStamp);
+          return dateB - dateA;
+        });
+        post.comments = sortedComments;
       });
-      post.comments = sortedComments;
-    });
   
-    res.status(200).send(postArray);
+      res.status(200).send(postArray);
+    } catch (error) {
+      res.status(500).send('Internal Server Error');
+    }
   });
 
-router.get("/api/posts/tags", (req, res) => {
-    res.status(200).send({tags})
-})
+  router.get("/api/posts/tags", (req, res) => {
+    try {
+      res.status(200).send({ tags });
+    } catch (error) {
+      res.status(500).send('Internal Server Error');
+    }
+  });
 
-router.get("/api/posts/hyped", async (req, res) => {
-    const postEligibleForHype = await db.posts.find({
-        $expr: {$gte: [{$size: "$rating"}, 2]}
-    }).toArray()
-
-
-    res.status(200).send(postEligibleForHype)
-})
+  router.get("/api/posts/hyped", async (req, res) => {
+    try {
+      const postEligibleForHype = await db.posts.find({
+        $expr: { $gte: [{ $size: "$rating" }, 2] }
+      }).toArray();
+  
+      res.status(200).send(postEligibleForHype);
+    } catch (error) {
+      res.status(500).send('Internal Server Error');
+    }
+  });
 
 
 //Create a post from the user and reference is where the post is located
@@ -196,27 +211,38 @@ router.patch("/api/posts/comments/:commentId", authenticateToken, async (req, re
 })
 
 router.patch("/api/posts/comments/:reference/:search", authenticateToken, async (req, res) => {
-    const user = req.user;
-    const comment = req.body;
-    const findUser = await db.users.findOne({artistName: user.artistName})
-    comment.commentAuthor = user.artistName;
-    comment._id = new ObjectId();
-    comment.rating = [];
-    comment.reported = []
-    comment.timeStamp = new Date().toLocaleString("en-GB");
-    comment.artistId = user._id;
-    comment.profilePictureKey = findUser.profilePictureKey;
-
-    if (req.params.reference === "wallposts") {
-        const id = req.params.search
-        const result = await db.posts.updateOne({_id: new ObjectId(id)}, {$push: {comments: comment}});
-        res.status(200).send({message: comment});
-    } else {
-        const postId = new ObjectId(req.params.search)
-        const updateCommentArray = await db.posts.updateOne({_id: postId}, {$push: {comments: comment}})
-        res.status(200).send(comment)
+    try {
+      const user = req.user;
+      const comment = req.body;
+      const findUser = await db.users.findOne({ artistName: user.artistName });
+      comment.commentAuthor = user.artistName;
+      comment._id = new ObjectId();
+      comment.rating = [];
+      comment.reported = [];
+      comment.timeStamp = new Date().toLocaleString("en-GB");
+      comment.artistId = user._id;
+      comment.profilePictureKey = findUser.profilePictureKey;
+  
+      if (req.params.reference === "wallposts") {
+        const id = req.params.search;
+        const result = await db.posts.updateOne(
+          { _id: new ObjectId(id) },
+          { $push: { comments: comment } }
+        );
+        res.status(200).send({ message: comment });
+      } else {
+        const postId = new ObjectId(req.params.search);
+        const updateCommentArray = await db.posts.updateOne(
+          { _id: postId },
+          { $push: { comments: comment } }
+        );
+        res.status(200).send(comment);
+      }
+    } catch (error) {
+      console.error('Error patching comments:', error);
+      res.status(500).send('Internal Server Error');
     }
-});
+  });
 
 router.patch("/api/posts/:postid", authenticateToken, async (req, res) => {
     const postId = new ObjectId(req.params.postid)
@@ -349,8 +375,6 @@ router.delete("/api/posts/:postid", authenticateToken, async (req, res) => {
                 Key: `${userId}/posts/${keyReference}`
             }).promise()
         }
-
-
         res.status(200).send({data: "deleted post"})
     } catch (error) {
         res.status(500).send(error)
