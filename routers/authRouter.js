@@ -16,6 +16,15 @@ router.get('/profile', authenticateToken, (req, res) => {
     res.send({customMessage: req.user})
 })
 
+router.get("/api/auth/logout", async (req, res) => {
+    try {
+        res.clearCookie("jwt");
+        res.status(200).send({message: "User logged out successfully"});
+    } catch (error) {
+        res.status(500).send({message: `An error occurred. Error: ${error.message}`});
+    }
+});
+
 router.post("/api/auth/signup", async (req, res) => {
     const newUser = req.body;
     newUser.password = await bcrypt.hash(newUser.password, 10);
@@ -62,13 +71,6 @@ router.post("/api/auth/login", async (req, res) => {
     }
 })
 
-router.get("/api/auth/logout", async (req, res) => {
-    try {
-        res.clearCookie("jwt");
-        res.status(200).send({message: "User logged out successfully"});
-    } catch (error) {
-        res.status(500).send({message: `An error occurred. Error: ${error.message}`});
-    }
-});
+
 
 export default router
