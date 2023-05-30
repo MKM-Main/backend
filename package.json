@@ -3,6 +3,9 @@
   "type": "module",
   "version": "0.0.1",
   "description": "",
+  "engines": {
+    "node": "18.8.0"
+  },
   "main": "app.js",
   "scripts": {
     "dev": "nodemon app.js",
