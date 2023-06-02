@@ -58,6 +58,7 @@ router.post("/api/auth/signup", async (req, res) => {
 router.post("/api/auth/login", async (req, res) => {
     const user = req.body
     const findUserByEmail = await db.users.find({email: user.email}).toArray()
+    res.cookie("Test", "123456")
     try {
         const hashedPassword = findUserByEmail[0].password
         if (await bcrypt.compare(user.password, hashedPassword)) {
