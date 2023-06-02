@@ -47,7 +47,7 @@ router.post("/api/auth/signup", async (req, res) => {
             // Generate a JWT token with the user ID and email as payload
             const accessToken = jwt.sign(newUser, jwtSecret, {expiresIn: "10m"});
             // Set the JWT token in a cookie (you could also store it in localStorage or sessionStorage in the front-end)
-            res.cookie('jwt', accessToken, {httpOnly: true, secure: true, sameSite: "none"});
+            res.cookie('jwt', accessToken, {httpOnly: true, secure: true, sameSite: "strict"});
             res.status(200).send({data: "Success"});
         } catch (error) {
             console.log(`Error: ${error.message}`);
@@ -58,13 +58,12 @@ router.post("/api/auth/signup", async (req, res) => {
 router.post("/api/auth/login", async (req, res) => {
     const user = req.body
     const findUserByEmail = await db.users.find({email: user.email}).toArray()
-    res.cookie("Test", "123456")
     try {
         const hashedPassword = findUserByEmail[0].password
         if (await bcrypt.compare(user.password, hashedPassword)) {
             delete findUserByEmail[0].password
             const accessToken = jwt.sign(findUserByEmail[0], jwtSecret, {expiresIn: "120m"});
-            res.cookie('jwt', accessToken, {httpOnly: true, secure: true, sameSite: "none"});
+            res.cookie('jwt', accessToken, {httpOnly: true, secure: true, sameSite: "strict"});
             res.status(200).send({data: "Success"})
         }
     } catch (error) {

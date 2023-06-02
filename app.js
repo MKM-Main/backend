@@ -69,8 +69,6 @@ const sessionMiddleware = session({
 })
 app.use(sessionMiddleware)
 
-import cookieParser from "cookie-parser";
-app.use(cookieParser())
 
 import authRouter from "./routers/authRouter.js"
 app.use(authRouter);
