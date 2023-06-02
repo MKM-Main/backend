@@ -32,12 +32,12 @@ io.on("connect", socket => {
     socket.on('new conversation', async (data) => {
         try {
             const user = data[0].receiver[0];
-          const conversationData = data;
-          io.emit('new conversation', { conversation: conversationData, user: user});
+            const conversationData = data;
+            io.emit('new conversation', {conversation: conversationData, user: user});
         } catch (error) {
-          console.error(error);
+            console.error(error);
         }
-      });
+    });
 });
 
 import cors from "cors"
@@ -69,6 +69,8 @@ const sessionMiddleware = session({
 })
 app.use(sessionMiddleware)
 
+import cookieParser from "cookie-parser";
+app.use(cookieParser())
 
 import authRouter from "./routers/authRouter.js"
 app.use(authRouter);
