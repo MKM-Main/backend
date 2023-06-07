@@ -63,6 +63,8 @@ router.post("/api/auth/login", async (req, res) => {
         if (await bcrypt.compare(user.password, hashedPassword)) {
             delete findUserByEmail[0].password
             const accessToken = jwt.sign(findUserByEmail[0], jwtSecret, {expiresIn: "120m"});
+            res.set('Access-Control-Allow-Origin', req.headers.origin)
+            res.set('Access-Control-Allow-Credentials', 'true')
             res.cookie('jwt', accessToken, {httpOnly: true, secure: true, sameSite: "strict"});
             res.status(200).send({data: "Success"})
         }
