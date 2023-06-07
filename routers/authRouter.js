@@ -64,7 +64,7 @@ router.post("/api/auth/login", async (req, res) => {
             delete findUserByEmail[0].password
             const accessToken = jwt.sign(findUserByEmail[0], jwtSecret, {expiresIn: "120m"});
             res.cookie('jwt', accessToken, {httpOnly: true, secure: true});
-            res.status(200).send({data: "Success"})
+            res.status(200).send({data: "Success", artistName: findUserByEmail[0].artistName})
         }
     } catch (error) {
         res.status(401).send({message: `login failed. \nError: ${error.message}`})
