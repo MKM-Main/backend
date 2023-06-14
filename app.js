@@ -56,6 +56,7 @@ app.use(fileUpload({
 import helmet from "helmet";
 app.use(helmet());
 
+
 import session from "express-session";
 const sessionMiddleware = session({
     secret: "123",
@@ -69,6 +70,7 @@ const sessionMiddleware = session({
 });
 
 app.use(sessionMiddleware);
+
 
 
 import authRouter from "./routers/authRouter.js";
