@@ -1,16 +1,16 @@
-import {Router} from "express"
-import db from "../database/database.js"
-import {ObjectId} from "mongodb"
-import {authenticateToken} from "./middelware/verifyJwt.js"
+import {Router} from "express";
+import db from "../database/database.js";
+import {ObjectId} from "mongodb";
+import {authenticateToken} from "./middelware/verifyJwt.js";
 import jwt from "jsonwebtoken";
 import AWS from "aws-sdk";
 import {authenticateAdmin} from "./middelware/authenticateAdmin.js";
-const jwtSecret = process.env.JWT_SECRET
+const jwtSecret = process.env.JWT_SECRET;
 
-const router = Router()
+const router = Router();
 
-const accessKeyId = process.env.AWS_S3_ACCESKEY
-const secretAccessKeyId = process.env.AWS_S3_SECRETACCESSKEY
+const accessKeyId = process.env.AWS_S3_ACCESKEY;
+const secretAccessKeyId = process.env.AWS_S3_SECRETACCESSKEY;
 const s3 = new AWS.S3({
         accessKeyId: accessKeyId,
         secretAccessKey: secretAccessKeyId
@@ -19,18 +19,15 @@ const s3 = new AWS.S3({
 
 
 router.get('/api/admin', authenticateToken, async (req, res) => {
-    const userRole = req.user.role
-    res.send({userRole})
-})
+    const userRole = req.user.role;
+    res.send({userRole});
+});
 
 router.patch("/api/admin/users/:artistId/profile-picture", authenticateToken, async (req, res) => {
 
-
-    const artistIdString = req.params.artistId
-    const artistIdAsObject = new ObjectId(req.params.artistId)
-    const file = req?.files?.profilePicture
-
-
+    const artistIdString = req.params.artistId;
+    const artistIdAsObject = new ObjectId(req.params.artistId);
+    const file = req?.files?.profilePicture;
     try {
         if (req.user.role === "admin" || req.user._id === artistIdString) {
             if (file) {
@@ -50,7 +47,7 @@ router.patch("/api/admin/users/:artistId/profile-picture", authenticateToken, as
                             Body: file?.data,
                             ContentType: file?.mimetype
                         }).promise();
-                    })
+                    });
             }
             await db.users.updateOne(
                 {_id: artistIdAsObject},
@@ -74,15 +71,14 @@ router.patch("/api/admin/users/:artistId/profile-picture", authenticateToken, as
                             {"comment.artistId": artistIdString}
                         ]
                     }
-                )
+                );
             })
         } else {
-            res.status(401).send({message: "Unauthorized action"})
+            res.status(401).send({message: "Unauthorized action"});
         }
     } catch (error) {
         res.status(500).send({error: error.message});
     }
-
 
 });
 
@@ -93,7 +89,7 @@ router.patch("/api/admin/users/:artistName", authenticateToken, async (req, res)
         const {artistName} = req.params;
         const newArtistName = req.body.userBody.artistName;
         const collections = await db.collections;
-        const userRole = req.user.role
+        const userRole = req.user.role;
 
         if (userRole === "admin" || req.user.artistName === artistName) {
 
@@ -258,46 +254,43 @@ router.patch("/api/admin/users/:artistName", authenticateToken, async (req, res)
             }
             res.status(200).send({message: "Success", data: findUserById[0]});
         } else {
-            res.status(403).send({message: "Unauthorized action"})
+            res.status(403).send({message: "Unauthorized action"});
         }
     } catch (err) {
-        console.error(err);
         res.status(500).send("Internal server error.");
     }
 });
 
 router.patch("/api/admin/verify/:id", authenticateToken, authenticateAdmin, async (req, res) => {
     try {
-        const id = new ObjectId(req.params.id)
-        const forum = await db.forums.findOne({_id: id})
-        const currentVerified = forum.verified
-        const newVerified = !currentVerified
-        forum.verified = newVerified
-        const result = await db.forums.updateOne({_id: id}, {$set: {verified: newVerified}})
-        res.status(200).send(forum)
+        const id = new ObjectId(req.params.id);
+        const forum = await db.forums.findOne({_id: id});
+        const currentVerified = forum.verified;
+        const newVerified = !currentVerified;
+        forum.verified = newVerified;
+        const result = await db.forums.updateOne({_id: id}, {$set: {verified: newVerified}});
+        res.status(200).send(forum);
     } catch (error) {
-        console.error(error)
-        res.status(500).send({error: "Error updating forum"})
+        res.status(500).send({error: "Error updating forum"});
     }
-})
+});
 
 router.delete("/api/admin/:urlApi/:id", authenticateToken, authenticateAdmin, async (req, res) => {
     try {
-        const id = new ObjectId(req.params.id)
-        const urlApi = req.params.urlApi
+        const id = new ObjectId(req.params.id);
+        const urlApi = req.params.urlApi;
 
         if (urlApi === "forum") {
-            const deleteForum = await db.forums.deleteOne({_id: id})
-            res.status(200).send(deleteForum)
+            const deleteForum = await db.forums.deleteOne({_id: id});
+            res.status(200).send(deleteForum);
         }
         if (urlApi === "users") {
-            const deleteUser = await db.users.deleteOne({_id: id})
-            res.status(200).send(deleteUser)
+            const deleteUser = await db.users.deleteOne({_id: id});
+            res.status(200).send(deleteUser);
         }
     } catch (error) {
-        console.error(error)
-        res.status(500).send({error: "Error deleting document"})
+        res.status(500).send({error: "Error deleting document"});
     }
-})
+});
 
-export default router
+export default router;
