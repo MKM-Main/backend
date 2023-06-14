@@ -1,31 +1,31 @@
-import {ObjectId} from "mongodb"
-import db from "./database.js"
-import bcrypt from "bcrypt"
+import { ObjectId } from "mongodb";
+import db from "./database.js";
+import bcrypt from "bcrypt";
 
-const user1Id = new ObjectId()
+const user1Id = new ObjectId();
 const user1IdString = user1Id.toString();
-const user2Id = new ObjectId()
+const user2Id = new ObjectId();
 const user2IdString = user2Id.toString();
-const user3Id = new ObjectId()
+const user3Id = new ObjectId();
 const user3IdString = user3Id.toString();
-console.log(user1IdString, user2IdString, user3IdString)
+console.log(user1IdString, user2IdString, user3IdString);
 
 
-const hashedPassword = await bcrypt.hash("123", 10)
+const hashedPassword = await bcrypt.hash("123", 10);
 
 const cleanDatabase = async () => {
     const deleteAction = true
     if (deleteAction) {
-        await db.users.drop()
-        await db.forums.drop()
-        await db.posts.drop()
-        await db.conversations.drop()
+        await db.users.drop();
+        await db.forums.drop();
+        await db.posts.drop();
+        await db.conversations.drop();
     }
-}
+};
 
 const insertData = async () => {
     await db.users.insertMany([
-        {   
+        {
             "_id": user1Id,
             "firstName": "Malthe",
             "lastName": "Gram",
@@ -93,7 +93,7 @@ const insertData = async () => {
                 "Funch"
             ],
             "profilePictureKey": "blank_profile.webp"
-        }])
+        }]);
 
     await db.posts.insertMany([
         {
@@ -182,7 +182,7 @@ const insertData = async () => {
                     "rating": [],
                     "reported": [],
                     "timeStamp": new Date().toLocaleString("en-GB"),
-                    "_id": new ObjectId() 
+                    "_id": new ObjectId()
                 },
                 {
                     "artistId": user3IdString,
@@ -228,7 +228,7 @@ const insertData = async () => {
                 }
             ]
         }
-    ])
+    ]);
 
     await db.forums.insertMany([
         {
@@ -272,7 +272,7 @@ const insertData = async () => {
             ],
             "creationDate": new Date().toLocaleString("en-GB")
         },
-    ])
+    ]);
 
     await db.conversations.insertMany([
         {
@@ -292,8 +292,8 @@ const insertData = async () => {
                 }
             ]
         }
-    ])
-}
+    ]);
+};
 
-await cleanDatabase()
-await insertData()
+await cleanDatabase();
+await insertData();
