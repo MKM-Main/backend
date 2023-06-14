@@ -4,7 +4,7 @@ const PORT = process.env.MONGODB_PORT || 27017
 const CONNECTION_STRING = process.env.MONGODB_CONNECTION_STRING || "mongodb://127.0.0.1"
 const CONNECTION_STRING_CLOUD = process.env.MONGODB_CONNECTION_STRING_CLOUD
 
-const url = CONNECTION_STRING_CLOUD //`${CONNECTION_STRING}:${PORT}`
+const url = CONNECTION_STRING //`${CONNECTION_STRING}:${PORT}`
 const client = new MongoClient(url)
 
 await client.connect()

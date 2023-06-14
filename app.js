@@ -56,19 +56,6 @@ app.use(fileUpload({
 import helmet from "helmet"
 app.use(helmet())
 
-import session from "express-session"
-const sessionMiddleware = session({
-    secret: "123",
-    resave: true,
-    saveUninitialized: true,
-    cookie: {
-        name: "456",
-        secure: false,
-        maxAge: 10000 * 60 * 60
-    }
-})
-app.use(sessionMiddleware)
-
 
 import authRouter from "./routers/authRouter.js"
 app.use(authRouter);
