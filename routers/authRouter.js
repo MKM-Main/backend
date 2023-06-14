@@ -21,7 +21,7 @@ router.get("/api/auth/logout", async (req, res) => {
         res.clearCookie("jwt");
         res.status(200).send({message: "User logged out successfully"});
     } catch (error) {
-        res.status(500).send({message: `An error occurred. Error: ${error.message}`});
+        res.status(500).send({ message: "An error occurred" });
     }
 });
 
@@ -50,7 +50,7 @@ router.post("/api/auth/signup", async (req, res) => {
             res.cookie('jwt', accessToken, {httpOnly: true, secure: true, sameSite: "strict"});
             res.status(200).send({data: "Success"});
         } catch (error) {
-            console.log(`Error: ${error.message}`);
+            res.status(500).send({ message: "An error occurred" });
         }
     }
 });
@@ -67,7 +67,7 @@ router.post("/api/auth/login", async (req, res) => {
             res.status(200).send({data: "Success", artistName: findUserByEmail[0].artistName})
         }
     } catch (error) {
-        res.status(401).send({message: `login failed. \nError: ${error.message}`})
+        res.status(401).send({ message: "login failed"})
     }
 })
 
