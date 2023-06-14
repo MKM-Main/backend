@@ -24,7 +24,7 @@ router.get(`/api/users/:artistName/merch`, async (req, res) => {
         )
         res.status(200).send({data: getMerch})
     } catch (error) {
-        res.status(500).send({error: error.message})
+        res.status(500).send({ message: "An error occurred" })
     }
 })
 
@@ -52,7 +52,7 @@ router.post("/api/users/:artistId/merch", authenticateToken, async (req, res) =>
         })
         res.status(200).send({data: merch})
     } catch (error) {
-        res.status(500).send({error: error.message})
+        res.status(500).send({ message: "An error occurred" })
     }
 })
 
@@ -74,7 +74,7 @@ router.delete("/api/users/:artistId/merch/:merchId", authenticateToken, async (r
         res.status(200).send({message: "Success"})
 
     } catch (error) {
-        res.status(500).send({error: error.message})
+        res.status(500).send({ message: "An error occurred" })
     }
 
 })

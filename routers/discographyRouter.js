@@ -47,7 +47,7 @@ router.post("/api/users/:artistId/discography", authenticateToken, async (req, r
         res.status(200).send({data: discographyItem})
 
     } catch (error) {
-        res.status(500).send({error: error.message})
+        res.status(500).send({ message: "An error occurred" })
     }
 
 })
@@ -69,7 +69,7 @@ router.delete("/api/users/:artistId/discography/:discoId", authenticateToken, as
         res.status(200).send({message: "Success"})
 
     } catch (error) {
-        res.status(500).send({error: error.message})
+        res.status(500).send({ message: "An error occurred" })
     }
 
 })
