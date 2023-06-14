@@ -12,7 +12,7 @@ router.get('/api/forum', async (req, res) => {
       const forum = await db.forums.find().toArray();
       res.send({ forum });
     } catch (error) {
-      res.status(500).send('Internal Server Error');
+      res.status(500).send({ message: "An error occurred" });
     }
   });
 
@@ -27,7 +27,7 @@ router.get('/api/forum', async (req, res) => {
         res.status(404).send({ message: "No forum with that title" });
       }
     } catch (error) {
-      res.status(500).send('Internal Server Error');
+      res.status(500).send({ message: "An error occurred" });
     }
   });
 
@@ -64,7 +64,7 @@ router.get('/api/forum', async (req, res) => {
       post.comments = sortedComments;
       res.send({ post });
     } catch (error) {
-      res.status(500).send('Internal Server Error');
+      res.status(500).send({ message: "An error occurred" });
     }
   });
 
@@ -79,8 +79,7 @@ router.post("/api/forum", authenticateToken, async (req, res) => {
         const post = await db.forums.insertOne(forumRequest)
         res.sendStatus(200)
     } catch (error) {
-        console.error(error)
-        res.status(500).send({error: "Error Creating forum"})
+        res.status(500).send({ message: "An error occurred" })
     }
 })
 

@@ -19,7 +19,7 @@ router.get("/api/users", async (req, res) => {
         })
         res.status(200).send({data: usersArray})
     } catch (error) {
-        res.status(404).send({data: `${error}`})
+        res.status(404).send({ message: "Not found" })
     }
 })
 
@@ -30,7 +30,7 @@ router.get("/api/users/:artistname", async (req, res) => {
       const user = await db.users.findOne({ artistName: artistName });
       res.send({ user: user });
     } catch (error) {
-      res.status(500).send('Internal Server Error');
+      res.status(500).send({ message: "An error occurred" });
     }
   });
   
@@ -54,8 +54,7 @@ router.get("/api/users/:state/:artistname", async (req, res) => {
         res.status(200).send(userArray);
       }
     } catch (error) {
-      console.error('Error retrieving users:', error);
-      res.status(500).send('Internal Server Error');
+      res.status(500).send({ message: "An error occurred" });
     }
   });
 
@@ -69,7 +68,7 @@ router.patch("/api/users", authenticateToken, async (req, res) => {
         res.cookie('jwt', newToken, {httpOnly: true});
         res.send({message: "Succes", token: newToken})
     } catch (error) {
-        res.status(500).send({message: "Error"})
+        res.status(500).send({ message: "An error occurred" })
     }
 })
 
@@ -97,8 +96,7 @@ router.patch("/api/users/follow", authenticateToken, async (req, res) => {
   
       res.send({ message: "User followed successfully" });
     } catch (error) {
-      console.error('Error following user:', error);
-      res.status(500).send('Internal Server Error');
+      res.status(500).send({ message: "An error occurred" });
     }
   });
 
@@ -125,8 +123,7 @@ router.patch("/api/users/follow", authenticateToken, async (req, res) => {
   
       res.send({ message: "User unfollowed successfully" });
     } catch (error) {
-      console.error('Error unfollowing user:', error);
-      res.status(500).send('Internal Server Error');
+      res.status(500).send({ message: "An error occurred" });
     }
   });
 
