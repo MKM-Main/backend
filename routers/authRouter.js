@@ -38,7 +38,7 @@ router.post("/api/auth/signup", async (req, res) => {
     const emailExist = await db.users.find({email: newUser.email}).toArray();
 
     if (emailExist.length !== 0) {
-        res.status(401).send({message: "Signup failed"});
+        res.status(409).send({message: "Signup failed"});
     } else {
         try {
             await db.users.insertOne(newUser);
