@@ -3,11 +3,13 @@ const jwtSecret = process.env.JWT_SECRET
 
 
 export function authenticateToken(req, res, next) {
+
+  //Getting jwt from authorization header
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({message: 'Unauthorized 1'});
+    return res.status(401).json({message: 'Unauthorized'});
   }
 
   jwt.verify(token, jwtSecret, (err, user) => {

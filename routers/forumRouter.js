@@ -3,10 +3,12 @@ import db from "../database/database.js"
 import {authenticateToken} from "./middelware/verifyJwt.js"
 const router = Router()
 
+//Replace"-" with spaces from a string
 function replaceHyphensWithSpaces(str) {
     return str.replace(/-/g, " ");
 }
 
+//Get all forums 
 router.get('/api/forum', async (req, res) => {
     try {
       const forum = await db.forums.find().toArray();
@@ -16,6 +18,7 @@ router.get('/api/forum', async (req, res) => {
     }
   });
 
+  //Get data on specific forum
   router.get('/api/forum/:forumTitle', async (req, res) => {
     try {
       const forumToFind = replaceHyphensWithSpaces(req.params.forumTitle);
@@ -31,6 +34,7 @@ router.get('/api/forum', async (req, res) => {
     }
   });
 
+  //Get data for specific post 
   router.get('/api/forum/post/:postTitle', async (req, res) => {
     try {
       const postTitleToFind = req.params.postTitle;
@@ -68,14 +72,13 @@ router.get('/api/forum', async (req, res) => {
     }
   });
 
+//Request new forum
 router.post("/api/forum", authenticateToken, async (req, res) => {
     try {
-        const userLoggedIn = req.user
         const forumRequest = req.body
         forumRequest.creationDate = new Date().toLocaleString("en-GB");
         forumRequest.tags = []
         forumRequest.verified = false
-
         const post = await db.forums.insertOne(forumRequest)
         res.sendStatus(200)
     } catch (error) {
