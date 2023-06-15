@@ -6,3 +6,5 @@
 4. node ddl.js
 6. cd ..
 7. npm run dev / if nodemon is not installed use: node app.js
+
+<sub> NOTE: Env variables are located in attachment 9 of the report </sub>
