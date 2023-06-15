@@ -8,8 +8,6 @@ const user2Id = new ObjectId()
 const user2IdString = user2Id.toString();
 const user3Id = new ObjectId()
 const user3IdString = user3Id.toString();
-console.log(user1IdString, user2IdString, user3IdString)
-
 
 const hashedPassword = await bcrypt.hash("123", 10)
 
@@ -35,7 +33,7 @@ const insertData = async () => {
             "merch": [],
             "discography": [],
             "userTags": ["DJ", "Singer", "Guitarist"],
-            "email": "malthegram22@gmail.com",
+            "email": "malthegram22@tunetower.com",
             "creationDate": new Date().toLocaleString("en-GB"),
             "password": bcrypt.hashSync("123", 10),
             "followers": [
@@ -235,7 +233,7 @@ const insertData = async () => {
             "forumTitle": "New Releases",
             "verified": true,
             "tags": [
-                "metal"
+                "news"
             ],
             "creationDate": new Date().toLocaleString("en-GB")
         },
@@ -243,7 +241,7 @@ const insertData = async () => {
             "forumTitle": "Sharing, Collaborating, and Inspiring",
             "verified": true,
             "tags": [
-                "rap"
+                "music"
             ],
             "creationDate": new Date().toLocaleString("en-GB")
         },
@@ -251,24 +249,24 @@ const insertData = async () => {
             "forumTitle": "Personal Stories, Experiences, and Insights",
             "verified": true,
             "tags": [
-                "rap"
+                "personal",
             ],
             "creationDate": new Date().toLocaleString("en-GB")
         },
 
         {
-            "forumTitle": "MGP FOR TOODLERS",
+            "forumTitle": "Fundraising Tips",
             "verified": false,
             "tags": [
-                "rap"
+                "tips"
             ],
             "creationDate": new Date().toLocaleString("en-GB")
         },
         {
-            "forumTitle": "VIL MEGA GERNE HAVE SLIK",
+            "forumTitle": "Praise 'N Glory",
             "verified": false,
             "tags": [
-                "rap"
+                "fans"
             ],
             "creationDate": new Date().toLocaleString("en-GB")
         },
@@ -297,3 +295,4 @@ const insertData = async () => {
 
 await cleanDatabase()
 await insertData()
+
