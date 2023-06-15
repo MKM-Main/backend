@@ -12,7 +12,7 @@ const user3IdString = user3Id.toString();
 const hashedPassword = await bcrypt.hash("123", 10)
 
 const cleanDatabase = async () => {
-    const deleteAction = true
+    const deleteAction = false
     if (deleteAction) {
         await db.users.drop()
         await db.forums.drop()
