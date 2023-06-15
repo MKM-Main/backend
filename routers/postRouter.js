@@ -7,6 +7,7 @@ const router = Router();
 
 const accessKeyId = process.env.AWS_S3_ACCESKEY
 const secretAccessKeyId = process.env.AWS_S3_SECRETACCESSKEY
+// Instantiate a new S3 object, which has access to AWS API methods.
 const s3 = new AWS.S3({
         accessKeyId: accessKeyId,
         secretAccessKey: secretAccessKeyId
@@ -33,15 +34,14 @@ router.get("/api/posts", async (req, res) => {
         const posts = await db.posts.find().toArray();
         res.send({posts});
     } catch (error) {
-        res.status(500).send({ message: "An error occurred" });
+        res.status(500).send({message: "An error occurred"});
     }
 });
 
 
-//News page
-
+//News page. Retrieve all posts from users whom the logged in user follows.
 router.get("/api/posts/news", authenticateToken, async (req, res) => {
-    try{
+    try {
         const userLoggedIn = req.user;
         const dbUser = await db.users.findOne({_id: new ObjectId(userLoggedIn._id)});
 
@@ -55,7 +55,7 @@ router.get("/api/posts/news", authenticateToken, async (req, res) => {
                 const [day, month, year] = datePart.split("/");
                 const [hours, minutes, seconds] = timePart.split(":");
 
-                // Note: The month value is zero-based in JavaScript's Date object,
+                // Note: The month value is zero-based in JavaScript.
                 // so we subtract 1 from the parsed month value
                 return new Date(year, month - 1, day, hours, minutes, seconds);
             };
@@ -72,10 +72,10 @@ router.get("/api/posts/news", authenticateToken, async (req, res) => {
 
             res.status(200).send(filteredArray);
         }
-    }catch(error){
-        res.status(500).send({ message: "An error occurred" });
+    } catch (error) {
+        res.status(500).send({message: "An error occurred"});
     }
-    
+
 });
 
 //Posts on own profile
@@ -94,7 +94,7 @@ router.get("/api/posts/wallposts/:artistName", async (req, res) => {
             const [day, month, year] = datePart.split("/");
             const [hours, minutes, seconds] = timePart.split(":");
 
-            // Note: The month value is zero-based in JavaScript's Date object,
+            // Note: The month value is zero-based in JavaScript
             // so we subtract 1 from the parsed month value
             return new Date(year, month - 1, day, hours, minutes, seconds);
         };
@@ -111,30 +111,17 @@ router.get("/api/posts/wallposts/:artistName", async (req, res) => {
 
         res.status(200).send(postArray);
     } catch (error) {
-        res.status(500).send({ message: "An error occurred" });
+        res.status(500).send({message: "An error occurred"});
     }
 });
-
+// Retrieve all tags
 router.get("/api/posts/tags", (req, res) => {
     try {
         res.status(200).send({tags});
     } catch (error) {
-        res.status(500).send({ message: "An error occurred" });
+        res.status(500).send({message: "An error occurred"});
     }
 });
-
-router.get("/api/posts/hyped", async (req, res) => {
-    try {
-        const postEligibleForHype = await db.posts.find({
-            $expr: {$gte: [{$size: "$rating"}, 2]}
-        }).toArray();
-
-        res.status(200).send(postEligibleForHype);
-    } catch (error) {
-        res.status(500).send({ message: "An error occurred" });
-    }
-});
-
 
 //Create a post from the user and reference is where the post is located
 router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
@@ -142,6 +129,7 @@ router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
     const user = req.user
     const reference = req.params.reference
     const post = req.body
+    // Tags is sent a String from frontend.
     post.tags = JSON.parse(req.body.tags)
     const findUser = await db.users.findOne({artistName: user.artistName})
 
@@ -158,7 +146,7 @@ router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
     if (fileType) {
         post.keyReference = `${post._id}.${fileType?.mimetype.split("/")[1]}`
         await s3.putObject({
-            Body: fileType?.data,
+            Body: fileType?.data, // This is the Byte data from the file object.
             Bucket: "mkm-mcb",
             Key: `${user._id}/posts/${post._id}.${fileType?.mimetype.split("/")[1]}`,
             ContentType: fileType?.mimetype
@@ -166,14 +154,15 @@ router.post('/api/posts/:reference', authenticateToken, async (req, res) => {
     }
 
     try {
+        // Remove any undefined values
         Object.keys(post).forEach(key => post[key] === "undefined" ? delete post[key] : {});
         await db.posts.insertOne(post)
         res.status(200).send({newPost: post});
     } catch (error) {
-        res.status(500).send({ message: "An error occurred" });
+        res.status(500).send({message: "An error occurred"});
     }
 });
-
+// Add or remove a user to the rated array in a comment.
 router.patch("/api/posts/comments/:commentId", authenticateToken, async (req, res) => {
     const commentId = new ObjectId(req.params.commentId);
 
@@ -206,12 +195,10 @@ router.patch("/api/posts/comments/:commentId", authenticateToken, async (req, re
             res.status(200).send({length: comment.rating.length + 1});
         }
     } catch (error) {
-        res.status(500).send({ message: "An error occurred" });
+        res.status(500).send({message: "An error occurred"});
     }
-
-
 })
-
+// Update a post with a comment.
 router.patch("/api/posts/comments/:reference/:search", authenticateToken, async (req, res) => {
     try {
         const user = req.user;
@@ -225,6 +212,7 @@ router.patch("/api/posts/comments/:reference/:search", authenticateToken, async 
         comment.artistId = user._id;
         comment.profilePictureKey = findUser.profilePictureKey;
 
+        // reference decided whether it's a post for an artist's wall or a forum.
         if (req.params.reference === "wallposts") {
             const id = req.params.search;
             const result = await db.posts.updateOne(
@@ -241,10 +229,11 @@ router.patch("/api/posts/comments/:reference/:search", authenticateToken, async 
             res.status(200).send(comment);
         }
     } catch (error) {
-        res.status(500).send({ message: "An error occurred" });
+        res.status(500).send({message: "An error occurred"});
     }
 });
 
+// Add or remove a user to the rated array.
 router.patch("/api/posts/:postid", authenticateToken, async (req, res) => {
     const postId = new ObjectId(req.params.postid)
     const userWhoRated = req.body.loggedInUser
@@ -259,10 +248,11 @@ router.patch("/api/posts/:postid", authenticateToken, async (req, res) => {
             res.status(200).send({length: checkIfUserAlreadyRatedPost[0]?.rating?.length + 1})
         }
     } catch (error) {
-        res.status(403).send({ message: "An error occurred" })
+        res.status(403).send({message: "An error occurred"})
     }
 })
 
+// Update a post or comment with a report of the user who's logged in.
 router.patch("/api/report/:id", authenticateToken, async (req, res) => {
     try {
         const posts = await db.posts.find().toArray();
@@ -280,7 +270,7 @@ router.patch("/api/report/:id", authenticateToken, async (req, res) => {
                 if (!postToUpdate) {
                     return res.status(404).send("Post not found");
                 }
-
+                // Destruct postToUpdate array
                 const {comments} = postToUpdate;
                 const updatedComments = await Promise.all(
                     comments.map(async (comment) => {
@@ -343,10 +333,10 @@ router.patch("/api/report/:id", authenticateToken, async (req, res) => {
             return res.sendStatus(200);
         }
     } catch (error) {
-        return res.status(500).send({ message: "An error occurred" });
+        return res.status(500).send({message: "An error occurred"});
     }
 });
-
+// Delete a comment within a post
 router.delete("/api/posts/comments/:postid/:commentid", async (req, res) => {
     try {
         const postId = new ObjectId(req.params.postid)
@@ -355,10 +345,10 @@ router.delete("/api/posts/comments/:postid/:commentid", async (req, res) => {
         const update = db.posts.updateOne({_id: postId}, {$pull: {comments: {_id: commentId}}});
         res.status(200).send(update)
     } catch (error) {
-        res.status(500).send({ message: "An error occurred" });
+        res.status(500).send({message: "An error occurred"});
     }
 })
-
+// Delete a post
 router.delete("/api/posts/:postid", authenticateToken, async (req, res) => {
     const postId = new ObjectId(req.params.postid)
     const userId = req.user._id
@@ -377,7 +367,7 @@ router.delete("/api/posts/:postid", authenticateToken, async (req, res) => {
         }
         res.status(200).send({data: "deleted post"})
     } catch (error) {
-        res.status(500).send({ message: "An error occurred" })
+        res.status(500).send({message: "An error occurred"})
     }
 
 })
