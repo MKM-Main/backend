@@ -3,12 +3,10 @@ import db from "../database/database.js"
 import {ObjectId} from "mongodb";
 import {authenticateToken} from "./middelware/verifyJwt.js"
 import jwt from "jsonwebtoken";
-const jwtSecret = process.env.JWT_SECRET
 const router = Router();
 
-//GET ALL USERS
+//Gets all the users
 router.get("/api/users", async (req, res) => {
-
     try {
         const users = await db.users.find().toArray()
         delete users.password
@@ -23,7 +21,7 @@ router.get("/api/users", async (req, res) => {
     }
 })
 
-
+//Gets one specific user on artistname
 router.get("/api/users/:artistname", async (req, res) => {
     try {
       const artistName = req.params.artistname;
@@ -58,6 +56,7 @@ router.get("/api/users/:state/:artistname", async (req, res) => {
     }
   });
 
+//Updates a user
 router.patch("/api/users", authenticateToken, async (req, res) => {
     const id = new ObjectId(req.user._id)
     const updatedUser = req.body
@@ -72,6 +71,7 @@ router.patch("/api/users", authenticateToken, async (req, res) => {
     }
 })
 
+//Makes it possible for at user to follow another user
 router.patch("/api/users/follow", authenticateToken, async (req, res) => {
     try {
       // Current user
@@ -100,31 +100,32 @@ router.patch("/api/users/follow", authenticateToken, async (req, res) => {
     }
   });
 
-  router.patch("/api/users/unfollow", authenticateToken, async (req, res) => {
-    try {
-      // Current user
-      const user = req.user;
-  
-      const unfollowUserId = new ObjectId(req.body.userId);
-  
-      const followinUserData = await db.users.findOne({ _id: unfollowUserId });
-  
-      // Remove the unfollowUserId from the userId's following list
-      await db.users.updateOne(
-        { _id: new ObjectId(user._id) },
-        { $pull: { following: followinUserData.artistName } }
-      );
-  
-      // Remove the userId from the unfollowUserId's followers list
-      await db.users.updateOne(
-        { _id: unfollowUserId },
-        { $pull: { followers: user.artistName } }
-      );
-  
-      res.send({ message: "User unfollowed successfully" });
-    } catch (error) {
-      res.status(500).send({ message: "An error occurred" });
-    }
-  });
+//Makes it possbile for a user to unfollow
+router.patch("/api/users/unfollow", authenticateToken, async (req, res) => {
+  try {
+    // Current user
+    const user = req.user;
+
+    const unfollowUserId = new ObjectId(req.body.userId);
+
+    const followinUserData = await db.users.findOne({ _id: unfollowUserId });
+
+    // Remove the unfollowUserId from the userId's following list
+    await db.users.updateOne(
+      { _id: new ObjectId(user._id) },
+      { $pull: { following: followinUserData.artistName } }
+    );
+
+    // Remove the userId from the unfollowUserId's followers list
+    await db.users.updateOne(
+      { _id: unfollowUserId },
+      { $pull: { followers: user.artistName } }
+    );
+
+    res.send({ message: "User unfollowed successfully" });
+  } catch (error) {
+    res.status(500).send({ message: "An error occurred" });
+  }
+});
 
 export default router;

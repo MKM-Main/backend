@@ -4,7 +4,7 @@ import { authenticateToken } from "./middelware/verifyJwt.js";
 const router = Router();
 import { ObjectId } from "mongodb";
 
-//Find all messages in coversation
+//Find one conversation on id
 router.get("/api/conversations/:conversationid", authenticateToken, async (req, res) => {
     const conversationId = req.params.conversationid;
     if (!ObjectId.isValid(conversationId)) {
@@ -21,7 +21,7 @@ router.get("/api/conversations/:conversationid", authenticateToken, async (req, 
     }
 });
 
-//Find all conversations on a logged in user
+//Finds all conversations on a logged in user
 router.get("/api/conversations", authenticateToken, async (req, res) => {
     try {
         const user = req.user.artistName;
@@ -112,6 +112,7 @@ router.patch("/api/conversations/messages/:conversationid", authenticateToken, a
 
 })
 
+//Patches the value of read to true, if a message gets read on the frontend
 router.patch("/api/conversations/read/:coversationid", authenticateToken, async (req, res) => {
     try {
         const conversationId = new ObjectId(req.params.coversationid);
@@ -125,6 +126,7 @@ router.patch("/api/conversations/read/:coversationid", authenticateToken, async 
     }
 });
 
+//Deletes a conversation on id
 router.delete("/api/conversations/:conversationid", async (req, res) => {
     try {
         const conversationId = new ObjectId(req.params.conversationid);
