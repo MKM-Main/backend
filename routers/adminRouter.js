@@ -5,24 +5,25 @@ import {authenticateToken} from "./middelware/verifyJwt.js";
 import jwt from "jsonwebtoken";
 import AWS from "aws-sdk";
 import {authenticateAdmin} from "./middelware/authenticateAdmin.js";
+
 const jwtSecret = process.env.JWT_SECRET;
-
 const router = Router();
-
 const accessKeyId = process.env.AWS_S3_ACCESKEY;
 const secretAccessKeyId = process.env.AWS_S3_SECRETACCESSKEY;
+
+// Instantiate a new S3 object, which has access to AWS API methods.
 const s3 = new AWS.S3({
         accessKeyId: accessKeyId,
         secretAccessKey: secretAccessKeyId
     }
 );
 
-
+//Fetch admin role
 router.get('/api/admin', authenticateToken, async (req, res) => {
     const userRole = req.user.role;
     res.send({userRole});
 });
-
+//Update profile picture 
 router.patch("/api/admin/users/:artistId/profile-picture", authenticateToken, async (req, res) => {
 
     const artistIdString = req.params.artistId;
@@ -82,7 +83,7 @@ router.patch("/api/admin/users/:artistId/profile-picture", authenticateToken, as
 
 });
 
-
+//Updates a a user and maps through all collections to update artistName
 router.patch("/api/admin/users/:artistName", authenticateToken, async (req, res) => {
     try {
 
@@ -91,6 +92,7 @@ router.patch("/api/admin/users/:artistName", authenticateToken, async (req, res)
         const collections = await db.collections;
         const userRole = req.user.role;
 
+        //Functionality restricted to admin, or logged in user
         if (userRole === "admin" || req.user.artistName === artistName) {
 
             if (!collections) {
@@ -113,11 +115,10 @@ router.patch("/api/admin/users/:artistName", authenticateToken, async (req, res)
 
                     // Update artistName in documents
                     const updateDocuments = documents.map(async (document) => {
-                        // Update artistName in the document
                         if (artistName === document.artistName) {
                             await collection.updateMany({artistName: document.artistName}, {$set: {artistName: newArtistName}});
                         }
-
+                        //Update reported array iif it exits
                         if (document.reported) {
                             const updatePostReported = document.reported.map(async (report) => {
                                 if (report.userWhoReported === artistName) {
@@ -173,7 +174,7 @@ router.patch("/api/admin/users/:artistName", authenticateToken, async (req, res)
                             });
                             await Promise.all(updateComments);
                         }
-
+                        //Update followers array
                         if (document.followers) {
                             const updateFollowers = document.followers.map(async (follower, index) => {
                                 if (follower === artistName) {
@@ -225,7 +226,7 @@ router.patch("/api/admin/users/:artistName", authenticateToken, async (req, res)
                             });
                             await Promise.all(updateParticipants);
                         }
-
+                        // Update rating array if it exists
                         if (document.rating) {
                             const updateRating = document.rating.map(async (rate) => {
                                 if (rate === artistName) {
@@ -247,6 +248,7 @@ router.patch("/api/admin/users/:artistName", authenticateToken, async (req, res)
             }
             const user = req.user
             const findUserById = await db.users.find({_id: new ObjectId(user._id)}).toArray()
+            //Create a new JWT token for the user on profile settings changes
             if (req.user.artistName === artistName) {
                 res.clearCookie("jwt");
                 const newToken = jwt.sign(findUserById[0], jwtSecret, {expiresIn: "10m"});
@@ -261,6 +263,7 @@ router.patch("/api/admin/users/:artistName", authenticateToken, async (req, res)
     }
 });
 
+//Verify forum requests from the users
 router.patch("/api/admin/verify/:id", authenticateToken, authenticateAdmin, async (req, res) => {
     try {
         const id = new ObjectId(req.params.id);
@@ -275,6 +278,7 @@ router.patch("/api/admin/verify/:id", authenticateToken, authenticateAdmin, asyn
     }
 });
 
+//Delete users and forums
 router.delete("/api/admin/:urlApi/:id", authenticateToken, authenticateAdmin, async (req, res) => {
     try {
         const id = new ObjectId(req.params.id);

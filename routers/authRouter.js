@@ -7,15 +7,18 @@ import { authenticateToken } from "./middelware/verifyJwt.js";
 const jwtSecret = process.env.JWT_SECRET;
 const router = Router();
 
+//Password security validation
 function isValidPassword(password) {
     const regex = /^(?=.*[A-Z]).{8,}$/;
     return regex.test(password);
 };
 
+//Get logged in user
 router.get('/profile', authenticateToken, (req, res) => {
     res.send({ customMessage: req.user });
 });
 
+//Logout
 router.get("/api/auth/logout", async (req, res) => {
     try {
         res.clearCookie("jwt");
@@ -25,8 +28,13 @@ router.get("/api/auth/logout", async (req, res) => {
     }
 });
 
+//Signup and JWT creation
 router.post("/api/auth/signup", async (req, res) => {
     const newUser = req.body;
+    if(!isValidPassword(newUser.password)){
+        res.status(400).send({message: "Bad Credentials"})
+        return
+    }
     newUser.password = await bcrypt.hash(newUser.password, 10);
     newUser.creationDate = new Date().toLocaleString("en-GB");
     newUser.followers = [];
@@ -55,6 +63,7 @@ router.post("/api/auth/signup", async (req, res) => {
     }
 });
 
+//Login and create JWT
 router.post("/api/auth/login", async (req, res) => {
     const user = req.body;
     const findUserByEmail = await db.users.find({ email: user.email }).toArray();
