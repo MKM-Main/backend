@@ -14,7 +14,7 @@ const s3 = new AWS.S3({
 }
 );
 
-
+//This router handles creating a new discography for a specific user
 router.post("/api/users/:artistId/discography", authenticateToken, async (req, res) => {
     const artistId = new ObjectId(req.params.artistId);
     const discographyItem = req.body;
@@ -51,6 +51,7 @@ router.post("/api/users/:artistId/discography", authenticateToken, async (req, r
     }
 });
 
+//This router handles delete of a discography on the id
 router.delete("/api/users/:artistId/discography/:discoId", authenticateToken, async (req, res) => {
     const artistId = new ObjectId(req.params.artistId);
     const discoId = new ObjectId(req.params.discoId);

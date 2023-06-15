@@ -14,6 +14,7 @@ const s3 = new AWS.S3({
     }
 );
 
+//Gets the all the merch from a user on artistname
 router.get(`/api/users/:artistName/merch`, async (req, res) => {
     const artistName = req.params.artistName
 
@@ -28,6 +29,7 @@ router.get(`/api/users/:artistName/merch`, async (req, res) => {
     }
 })
 
+//Creates new merch for a specific user on their id
 router.post("/api/users/:artistId/merch", authenticateToken, async (req, res) => {
     const artistId = new ObjectId(req.params.artistId)
     const merch = req.body
@@ -56,7 +58,7 @@ router.post("/api/users/:artistId/merch", authenticateToken, async (req, res) =>
     }
 })
 
-
+//Deletes specific merch for on a user and merch id
 router.delete("/api/users/:artistId/merch/:merchId", authenticateToken, async (req, res) => {
     const artistId = new ObjectId(req.params.artistId)
     const merchId = new ObjectId(req.params.merchId)
